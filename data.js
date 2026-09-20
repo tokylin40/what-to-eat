@@ -64,3 +64,16 @@ window.WTE_HELL_QUESTIONS = [
     {label:'慢慢吃',emoji:'😌',prefs:{meal:'simple',price:'mid'}},
     {label:'聚餐感',emoji:'🎉',prefs:{meal:'feast'}}]}
 ];
+
+
+window.WTE_TEMPLATES = {
+  all:{label:'全部隨機',emoji:'🎲',description:'什麼都不設限，直接讓命運亂入。',ids:null,wheelCount:10},
+  taiwan:{label:'台式日常',emoji:'🍚',description:'熟悉、快速、台味一點。',ids:['beef-noodle','bento','braised-pork-rice','dumplings','chicken-rice','duck-rice','fried-rice','teppanyaki','xiaolongbao','hotpot'],wheelCount:8},
+  noodle:{label:'麵食控',emoji:'🍜',description:'飯先退下，今天讓麵類自己打一架。',ids:['ramen','beef-noodle','pasta','vietnamese','mala','udon','korean','curry'],wheelCount:8},
+  feast:{label:'聚餐大餐',emoji:'🥩',description:'不是隨便填飽，是要認真吃一餐。',ids:['hotpot','bbq','korean','pizza','steak','seafood','thai','tempura','teppanyaki','sushi'],wheelCount:10},
+  budget:{label:'省錢快吃',emoji:'🪙',description:'錢包先活下來，速度跟飽足優先。',ids:['bento','braised-pork-rice','dumplings','chicken-rice','duck-rice','fried-rice','vietnamese','beef-noodle'],wheelCount:8},
+  light:{label:'清爽一點',emoji:'🌿',description:'今天不想太油太重，胃想安靜一點。',ids:['sushi','vietnamese','vegetarian','brunch','xiaolongbao','chicken-rice','udon','seafood'],wheelCount:8},
+  late:{label:'宵夜罪惡局',emoji:'🌙',description:'晚了，但嘴巴完全沒有要下班。',ids:['fried-chicken','mala','dumplings','burger','pizza','ramen','fried-rice','hotpot'],wheelCount:8}
+};
+
+window.WTE_GOOGLE_PLACES_KEY = window.WTE_GOOGLE_PLACES_KEY || '';

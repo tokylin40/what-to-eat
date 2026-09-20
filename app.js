@@ -4,6 +4,8 @@
   const DISHES = window.WTE_DISHES || [];
   const REGRET_LINES = window.WTE_REGRET_LINES || [];
   const HELL_QUESTIONS = window.WTE_HELL_QUESTIONS || [];
+  const TEMPLATES = window.WTE_TEMPLATES || {};
+  const PLACES_KEY = window.WTE_GOOGLE_PLACES_KEY || '';
   const STORAGE_KEY = 'what-to-eat-v01';
   const app = document.querySelector('#app');
   const toastEl = document.querySelector('#toast');
@@ -181,9 +183,38 @@
     document.querySelector('#stomachLink').addEventListener('click', renderStomach);
     document.querySelectorAll('[data-mode]').forEach(btn => btn.addEventListener('click', () => {
       const mode = btn.dataset.mode;
-      if (mode === 'tournament') startTournament();
-      if (mode === 'wheel') startWheel();
+      if (mode === 'tournament') renderTemplatePicker('tournament');
+      if (mode === 'wheel') renderTemplatePicker('wheel');
       if (mode === 'hell') renderHellIntro();
+    }));
+  }
+
+  function templatePool(templateId) {
+    const template = TEMPLATES[templateId] || TEMPLATES.all || {label:'全部隨機', ids:null};
+    const pool = Array.isArray(template.ids) ? template.ids.map(getDish).filter(Boolean) : DISHES;
+    return {template, pool: pool.length ? pool : DISHES};
+  }
+
+  function renderTemplatePicker(mode) {
+    clearAsync();
+    const entries = Object.entries(TEMPLATES);
+    const title = mode === 'tournament' ? '三問淘汰賽' : '命運大輪盤';
+    const copy = mode === 'tournament' ? '先縮小今天的範圍，再開始三組獨立對決。' : '先決定今天是哪一種局，再交給命運。';
+    app.innerHTML = `<div class="shell">
+      ${topbar(true)}
+      <section class="panel">
+        <div class="progress-row"><span>${title}</span><span>先選一種局</span></div>
+        <div class="question">今天想從哪一類開始？</div>
+        <p class="hint">${copy}</p>
+        <div class="template-grid">
+          ${entries.map(([id,t]) => `<button class="template-card" data-template="${id}"><span class="template-emoji">${t.emoji || '🍽️'}</span><span><b>${t.label}</b><small>${t.description || ''}</small></span></button>`).join('')}
+        </div>
+      </section>
+    </div>`;
+    attachBack(renderHome);
+    document.querySelectorAll('[data-template]').forEach(btn => btn.addEventListener('click', () => {
+      if (mode === 'tournament') startTournament(btn.dataset.template);
+      else startWheel(btn.dataset.template);
     }));
   }
 
@@ -195,10 +226,14 @@
     </button>`;
   }
 
-  function startTournament() {
+  function startTournament(templateId = 'all') {
     clearAsync();
-    const six = sample(DISHES, 6);
+    const {template, pool} = templatePool(templateId);
+    const source = pool.length >= 6 ? pool : DISHES;
+    const six = sample(source, 6);
     tournament = {
+      templateId,
+      templateLabel:template.label || '全部隨機',
       pairs:[[six[0],six[1]],[six[2],six[3]],[six[4],six[5]]],
       round:0,
       survivors:[],
@@ -215,14 +250,14 @@
     app.innerHTML = `<div class="shell">
       ${topbar(true)}
       <section class="panel">
-        <div class="progress-row"><span>三問淘汰賽</span><div class="progress-dots">${[1,2,3,4].map(n => `<i class="dot ${n <= roundNumber ? 'on' : ''}"></i>`).join('')}</div></div>
+        <div class="progress-row"><span>三問淘汰賽 · ${tournament.templateLabel}</span><div class="progress-dots">${[1,2,3,4].map(n => `<i class="dot ${n <= roundNumber ? 'on' : ''}"></i>`).join('')}</div></div>
         <div class="question">今天比較不想吃哪個？</div>
         <p class="hint">反向選擇：點你比較不想吃的。別想太久，你的手比腦誠實。</p>
         <div class="duel">${foodCard(pair[0])}${foodCard(pair[1])}</div>
         <div class="speech" id="speech">第 ${roundNumber} 組。這兩個先互相傷害一下。</div>
       </section>
     </div>`;
-    attachBack(renderHome);
+    attachBack(() => renderTemplatePicker('tournament'));
     document.querySelectorAll('.food-card').forEach(card => card.addEventListener('click', () => {
       const rejected = pair.find(d => d.id === card.dataset.dish);
       const survivor = pair.find(d => d.id !== card.dataset.dish);
@@ -279,26 +314,36 @@
     }, 760);
   }
 
-  function startWheel() {
+  function startWheel(templateId = 'all') {
     clearAsync();
-    wheelItems = sample(DISHES, 10);
+    const {template, pool} = templatePool(templateId);
+    const desired = Number(template.wheelCount) || 8;
+    const count = Math.max(6, Math.min(12, Math.min(desired, pool.length)));
+    wheelItems = sample(pool, count);
+    const slice = 360 / count;
+    const palette = ['#f6ce62','#4b70d8','#7fc07d','#e65747','#f6b58e','#d980e7','#9da7ed','#8cccec','#fff1a6','#b4efb2','#f3a5a5','#f0d77a'];
+    const stops = wheelItems.map((_,i) => `${palette[i % palette.length]} ${i*slice}deg ${(i+1)*slice}deg`).join(',');
+    const background = `repeating-conic-gradient(from 0deg, rgba(21,21,21,.9) 0 1.2deg, transparent 1.2deg ${slice}deg), conic-gradient(from 0deg, ${stops})`;
     const labels = wheelItems.map((d, i) => {
-      const angle = i * 36 + 18;
-      return `<span class="wheel-label" style="transform:rotate(${angle}deg) translateY(-118px) rotate(${-angle}deg)">${d.emoji}<br>${d.name}</span>`;
+      const angle = i * slice + slice / 2;
+      const flip = angle > 90 && angle < 270 ? 180 : 0;
+      return `<span class="wheel-label" data-wheel-index="${i}" style="transform:translate(-50%,-50%) rotate(${angle}deg) translateY(-122px)"><span class="wheel-label-inner" style="transform:rotate(${flip}deg)"><i>${d.emoji}</i><b>${d.name}</b></span></span>`;
     }).join('');
     app.innerHTML = `<div class="shell">
       ${topbar(true)}
-      <section class="panel">
-        <div class="progress-row"><span>命運大輪盤</span><span>10 選 1</span></div>
+      <section class="panel wheel-panel">
+        <div class="progress-row"><span>命運大輪盤 · ${template.label || '全部隨機'}</span><span>${count} 選 1</span></div>
         <div class="question">不要想。轉就對了。</div>
-        <p class="hint">你以前按過的評價會偷偷影響機率，但討厭的料理不會永遠消失。</p>
-        <div class="wheel-wrap"><div class="pointer"></div><div class="wheel" id="wheel">${labels}</div></div>
-        <button class="primary wheel-spin" id="spinBtn">開始轉 🎡</button>
+        <p class="hint">${template.description || '今天的命運就交給這一圈。'}</p>
+        <div class="wheel-wrap"><div class="pointer"><span></span></div><div class="wheel" id="wheel" style="background:${background}">${labels}</div><button class="wheel-hub" data-spin>轉！</button></div>
+        <button class="primary wheel-spin" data-spin>開始轉 🎡</button>
+        <button class="link-btn wheel-change" id="changeWheelTemplate">換一組料理模板</button>
         <div class="wheel-note">宇宙不負責售後服務。</div>
       </section>
     </div>`;
-    attachBack(renderHome);
-    document.querySelector('#spinBtn').addEventListener('click', spinWheel);
+    attachBack(() => renderTemplatePicker('wheel'));
+    document.querySelectorAll('[data-spin]').forEach(btn => btn.addEventListener('click', spinWheel));
+    document.querySelector('#changeWheelTemplate').addEventListener('click', () => renderTemplatePicker('wheel'));
   }
 
   function ratingWeight(dish) {
@@ -323,17 +368,18 @@
   }
 
   function spinWheel() {
-    const btn = document.querySelector('#spinBtn');
-    if (!btn || btn.disabled) return;
-    btn.disabled = true;
-    btn.textContent = '命運正在亂來…';
+    const buttons = [...document.querySelectorAll('[data-spin]')];
+    if (!buttons.length || buttons.some(b => b.disabled)) return;
+    buttons.forEach(b => { b.disabled = true; if (b.classList.contains('wheel-spin')) b.textContent = '命運正在亂來…'; });
     const chosen = weightedChoice(wheelItems);
     const idx = wheelItems.findIndex(d => d.id === chosen.id);
-    const center = idx * 36 + 18;
-    const rotation = 360 * 5 + (360 - center);
+    const slice = 360 / wheelItems.length;
+    const center = idx * slice + slice / 2;
+    const rotation = 360 * 6 + (360 - center);
     const wheel = document.querySelector('#wheel');
     requestAnimationFrame(() => { wheel.style.transform = `rotate(${rotation}deg)`; });
-    later(() => renderResult(chosen, 'wheel', `宇宙已經決定了：${chosen.name}。不接受申訴。`), 1700);
+    later(() => { const hit = document.querySelector(`[data-wheel-index="${idx}"] .wheel-label-inner`); if (hit) hit.classList.add('wheel-hit'); }, 1550);
+    later(() => renderResult(chosen, 'wheel', `宇宙已經決定了：${chosen.name}。不接受申訴。`), 1950);
   }
 
   function renderHellIntro() {
@@ -419,6 +465,52 @@
     renderResult(chosen, 'hell', `你自己按的。地獄把答案算成了 ${chosen.name}。現在不要怪我。`);
   }
 
+  function googleMapsSearchUrl(dish, coords = null) {
+    const near = coords ? ` ${coords.latitude},${coords.longitude}` : '';
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dish.name + near)}`;
+  }
+
+  function getBrowserLocation() {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) return reject(new Error('NO_GEO'));
+      navigator.geolocation.getCurrentPosition(
+        p => resolve({latitude:p.coords.latitude, longitude:p.coords.longitude}),
+        reject,
+        {enableHighAccuracy:false, timeout:8000, maximumAge:300000}
+      );
+    });
+  }
+
+  function nearbyFallback(dish, coords, message) {
+    const box = document.querySelector('#nearbyResults');
+    if (!box) return;
+    box.innerHTML = `<div class="nearby-fallback">${message}</div><a class="maps-link" href="${googleMapsSearchUrl(dish, coords)}" target="_blank" rel="noopener">在 Google 地圖搜尋附近 ${dish.name} →</a>`;
+  }
+
+  async function findNearbyRestaurants(dish) {
+    const btn = document.querySelector('#nearbyBtn');
+    if (!btn) return;
+    btn.disabled = true;
+    btn.textContent = '正在取得位置…';
+    let coords;
+    try { coords = await getBrowserLocation(); }
+    catch {
+      nearbyFallback(dish, null, '沒有取得定位權限，先用 Google 地圖搜尋。');
+      btn.disabled = false;
+      btn.textContent = '再試一次附近餐廳';
+      return;
+    }
+    if (!PLACES_KEY) {
+      nearbyFallback(dish, coords, '已取得位置。要直接列出 3～5 間真實店家，需要設定 Google Places API key；目前先開附近地圖搜尋。');
+      btn.disabled = false;
+      btn.textContent = '重新找附近餐廳';
+      return;
+    }
+    nearbyFallback(dish, coords, 'Google Places key 已設定；目前先以附近地圖搜尋顯示結果。');
+    btn.disabled = false;
+    btn.textContent = '重新找附近餐廳';
+  }
+
   function renderResult(dish, mode, copy) {
     clearAsync();
     const modeTitle = mode === 'tournament' ? '三問淘汰賽' : mode === 'wheel' ? '命運大輪盤' : '地獄直覺快答';
@@ -430,6 +522,12 @@
         <div class="result-name">${dish.name}</div>
         <div class="result-copy">${copy}</div>
         <div class="speech">${mode === 'hell' ? '你自己按的，現在不要怪我。' : '好了，晚餐有答案了。問題只剩你敢不敢承認。'}</div>
+        <div class="nearby-box">
+          <div class="nearby-title">📍 附近哪裡吃 ${dish.name}？</div>
+          <p>取得定位後，可直接搜尋你附近的對應餐廳。</p>
+          <button class="secondary" id="nearbyBtn">找附近餐廳</button>
+          <div id="nearbyResults"></div>
+        </div>
         <div class="actions">
           <button class="primary" id="acceptResult">${mode === 'hell' ? '我接受審判' : '認命，就吃這個'}</button>
           ${mode === 'hell' ? '' : '<button class="secondary" id="regretBtn">我想反悔</button>'}
@@ -439,6 +537,7 @@
     </div>`;
     attachBack(renderHome);
     document.querySelector('#acceptResult').addEventListener('click', () => renderRating(dish, mode));
+    document.querySelector('#nearbyBtn').addEventListener('click', () => findNearbyRestaurants(dish));
     document.querySelector('#regretBtn').addEventListener('click', () => handleRegret(dish, mode));
   }
 
@@ -467,8 +566,8 @@
   }
 
   function restartMode(mode) {
-    if (mode === 'tournament') startTournament();
-    if (mode === 'wheel') startWheel();
+    if (mode === 'tournament') renderTemplatePicker('tournament');
+    if (mode === 'wheel') renderTemplatePicker('wheel');
     if (mode === 'hell') renderHome();
   }
 
