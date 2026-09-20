@@ -6,7 +6,10 @@
   const HELL_QUESTIONS = window.WTE_HELL_QUESTIONS || [];
   const TEMPLATES = window.WTE_TEMPLATES || {};
   const MAIN_OPTIONS = window.WTE_MAIN_OPTIONS || [];
+  const DETAIL_MAP = window.WTE_DETAIL_MAP || {};
   const STORAGE_KEY = 'what-to-eat-v01';
+  const CUSTOM_WHEELS_KEY = 'what-to-eat-custom-wheels-v1';
+  const SOUND_KEY = 'what-to-eat-sound-v1';
   const app = document.querySelector('#app');
   const toastEl = document.querySelector('#toast');
   const asyncHandles = new Set();
@@ -15,7 +18,12 @@
   let tournament = null;
   let hell = null;
   let wheelItems = [];
+  let wheelContext = null;
   let toastTimer = null;
+  let lastTournamentFinalMode = null;
+  let soundEnabled = localStorage.getItem(SOUND_KEY) !== 'off';
+  let audioCtx = null;
+  let customWheels = loadCustomWheels();
 
   function blankStats() {
     return {version:1, plays:0, regrets:0, dishes:{}, history:[]};
@@ -41,6 +49,122 @@
 
   function saveStats() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
+  }
+
+  function loadCustomWheels() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(CUSTOM_WHEELS_KEY) || '[]');
+      return Array.isArray(parsed) ? parsed.filter(w => w && w.id && w.name && Array.isArray(w.items)) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveCustomWheels() {
+    localStorage.setItem(CUSTOM_WHEELS_KEY, JSON.stringify(customWheels));
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  function detailItemsFor(dish) {
+    const names = DETAIL_MAP[dish?.id] || [];
+    const seen = new Set();
+    return names.map(name => DISHES.find(d => d.name === name)).filter(d => {
+      if (!d || seen.has(d.id)) return false;
+      seen.add(d.id);
+      return true;
+    });
+  }
+
+  function ensureAudioContext() {
+    if (!soundEnabled) return null;
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
+    if (!audioCtx) audioCtx = new Ctx();
+    if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+    return audioCtx;
+  }
+
+  function playTone(freq = 440, duration = .06, type = 'square', volume = .03, delay = 0) {
+    const ctx = ensureAudioContext();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const start = ctx.currentTime + delay;
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, start);
+    gain.gain.setValueAtTime(.0001, start);
+    gain.gain.exponentialRampToValueAtTime(Math.max(.001, volume), start + .008);
+    gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + duration + .02);
+  }
+
+  function playClickSound() {
+    playTone(520,.045,'square',.018);
+  }
+
+  function playLoseSound() {
+    playTone(230,.08,'sawtooth',.025);
+    playTone(165,.1,'sawtooth',.02,.07);
+  }
+
+  function playWinSound() {
+    playTone(523,.1,'sine',.032);
+    playTone(659,.12,'sine',.034,.1);
+    playTone(784,.18,'sine',.038,.21);
+  }
+
+  function playSpinTicks() {
+    [0,.08,.16,.24,.33,.43,.54,.66,.79,.93,1.08,1.24,1.41,1.58].forEach((time,i) => {
+      playTone(360 + i*18,.025,'square',.016,time);
+    });
+  }
+
+  function toggleSound() {
+    soundEnabled = !soundEnabled;
+    localStorage.setItem(SOUND_KEY, soundEnabled ? 'on' : 'off');
+    const btn = document.querySelector('#soundBtn');
+    if (btn) {
+      btn.textContent = soundEnabled ? '🔊' : '🔇';
+      btn.setAttribute('aria-label', soundEnabled ? '關閉音效' : '開啟音效');
+    }
+    if (soundEnabled) {
+      playTone(660,.06,'sine',.03);
+      showToast('音效已開啟');
+    } else {
+      showToast('已靜音');
+    }
+  }
+
+  document.addEventListener('click', e => {
+    const soundBtn = e.target.closest('#soundBtn');
+    if (soundBtn) toggleSound();
+  });
+
+  function celebrate() {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const oldLayer = document.querySelector('.confetti-layer');
+    if (oldLayer) oldLayer.remove();
+    const layer = document.createElement('div');
+    layer.className = 'confetti-layer';
+    const symbols = ['●','■','▲','★','✦'];
+    for (let i = 0; i < 24; i += 1) {
+      const piece = document.createElement('i');
+      piece.textContent = symbols[i % symbols.length];
+      piece.style.setProperty('--x', (Math.random()*100).toFixed(1) + '%');
+      piece.style.setProperty('--dx', ((Math.random()-.5)*150).toFixed(0) + 'px');
+      piece.style.setProperty('--r', ((Math.random()-.5)*520).toFixed(0) + 'deg');
+      piece.style.setProperty('--delay', (Math.random()*.18).toFixed(2) + 's');
+      piece.style.setProperty('--dur', (.85 + Math.random()*.55).toFixed(2) + 's');
+      layer.appendChild(piece);
+    }
+    document.body.appendChild(layer);
+    setTimeout(() => layer.remove(),1700);
   }
 
   function dishStat(id) {
@@ -135,7 +259,10 @@
   function topbar(backAction = null) {
     return `<div class="topbar">
       <div class="brand">你想吃什麼？</div>
-      ${backAction ? `<button class="icon-btn" id="backBtn" aria-label="回首頁">← 回去</button>` : `<button class="text-btn" id="stomachBtn">我的胃</button>`}
+      <div class="top-actions">
+        <button class="sound-btn" id="soundBtn" type="button" aria-label="${soundEnabled ? '關閉音效' : '開啟音效'}">${soundEnabled ? '🔊' : '🔇'}</button>
+        ${backAction ? `<button class="icon-btn" id="backBtn" aria-label="回首頁">← 回去</button>` : `<button class="text-btn" id="stomachBtn">我的胃</button>`}
+      </div>
     </div>`;
   }
 
@@ -264,18 +391,7 @@
     if (templateId === 'all') return {template, pool:MAIN_OPTIONS};
 
     const main = MAIN_OPTIONS.filter(d => Array.isArray(d.tags) && d.tags.includes(templateId));
-    if (main.length >= 6) return {template, pool:main};
-
-    const detail = templatePool(templateId).pool;
-    const merged = [...main];
-    const names = new Set(main.map(d => d.name));
-    detail.forEach(d => {
-      if (!names.has(d.name)) {
-        merged.push(d);
-        names.add(d.name);
-      }
-    });
-    return {template, pool:merged.length ? merged : MAIN_OPTIONS};
+    return {template, pool:main.length ? main : MAIN_OPTIONS};
   }
 
   function wheelLabelHtml(name) {
@@ -288,7 +404,7 @@
       '水餃／鍋貼':'水餃／鍋貼',
       '早餐／早午餐':'早午餐'
     };
-    const safe = aliases[name] || String(name);
+    const safe = escapeHtml(aliases[name] || String(name));
     if (safe.includes('／')) return safe.replace('／','／<br>');
     if (safe.length >= 7) {
       const mid = Math.ceil(safe.length / 2);
@@ -303,6 +419,53 @@
   function tournamentTemplateEntries() {
     const allowed = ['all','rice','noodle','hotpot','meat','fastfood','international','breakfast','healthy'];
     return allowed.map(id => [id, TEMPLATES[id]]).filter(([,t]) => t);
+  }
+
+  function customWheelSection() {
+    const cards = customWheels.map(w => `<div class="custom-wheel-card">
+      <div><b>🎯 ${escapeHtml(w.name)}</b><small>${w.items.map(escapeHtml).join('、')}</small></div>
+      <div class="custom-wheel-actions">
+        <button class="mini-action primary-mini" data-custom-play="${w.id}">開始</button>
+        <button class="mini-action" data-custom-edit="${w.id}">編輯</button>
+        <button class="mini-action danger-mini" data-custom-delete="${w.id}">刪除</button>
+      </div>
+    </div>`).join('');
+    return `<section class="custom-wheel-section">
+      <div class="custom-wheel-head"><div><b>🛠️ 自定義輪盤</b><small>自己填 2～8 個選項，可以存起來下次再玩。</small></div><button class="secondary compact-btn" id="newCustomWheel">＋ 新增</button></div>
+      <div class="custom-wheel-list">${cards || '<div class="custom-wheel-empty">還沒有自定義輪盤。聚餐、飲料、遊戲都可以自己做一個。</div>'}</div>
+    </section>`;
+  }
+
+  function renderCustomWheelEditor(id = null) {
+    clearAsync();
+    const existing = customWheels.find(w => w.id === id);
+    app.innerHTML = `<div class="shell">
+      ${topbar(true)}
+      <section class="panel">
+        <div class="progress-row"><span>自定義輪盤</span><span>2～8 項</span></div>
+        <div class="question">${existing ? '修改這個輪盤' : '做自己的輪盤'}</div>
+        <p class="hint">每行一個項目，也可以用逗號分隔。最多 8 項，手機上比較好看。</p>
+        <label class="field-label">輪盤名稱</label>
+        <input class="custom-input" id="customWheelName" maxlength="24" placeholder="例如：今晚聚餐" value="${escapeHtml(existing?.name || '')}">
+        <label class="field-label">選項</label>
+        <textarea class="custom-textarea" id="customWheelItems" rows="8" placeholder="火鍋&#10;燒肉&#10;壽司&#10;披薩">${escapeHtml((existing?.items || []).join('\n'))}</textarea>
+        <div class="actions"><button class="primary" id="saveCustomWheel">${existing ? '儲存修改' : '儲存這個輪盤'}</button><button class="secondary" id="cancelCustomWheel">取消</button></div>
+      </section>
+    </div>`;
+    attachBack(() => renderTemplatePicker('wheel'));
+    document.querySelector('#cancelCustomWheel').addEventListener('click', () => renderTemplatePicker('wheel'));
+    document.querySelector('#saveCustomWheel').addEventListener('click', () => {
+      const name = document.querySelector('#customWheelName').value.trim() || '我的輪盤';
+      const raw = document.querySelector('#customWheelItems').value;
+      const items = [...new Set(raw.split(/[\n,，]+/).map(x => x.trim()).filter(Boolean))];
+      if (items.length < 2) return showToast('至少要有 2 個選項。');
+      if (items.length > 8) return showToast('最多 8 個選項，避免手機輪盤太擠。');
+      const entry = {id:existing?.id || ('cw-' + Date.now().toString(36)), name, items, updatedAt:new Date().toISOString()};
+      customWheels = existing ? customWheels.map(w => w.id === existing.id ? entry : w) : [entry, ...customWheels];
+      saveCustomWheels();
+      showToast('輪盤已存檔。');
+      renderTemplatePicker('wheel');
+    });
   }
 
   function renderTemplatePicker(mode) {
@@ -320,6 +483,7 @@
         <div class="template-grid">
           ${entries.map(([id,t]) => `<button class="template-card ${mode === 'tournament' && id === 'all' ? 'template-featured' : ''}" data-template="${id}"><span class="template-emoji">${t.emoji || '🍽️'}</span><span><b>${t.label}</b><small>${t.description || ''}</small></span></button>`).join('')}
         </div>
+        ${mode === 'wheel' ? customWheelSection() : ''}
       </section>
     </div>`;
     attachBack(renderHome);
@@ -327,6 +491,19 @@
       if (mode === 'tournament') startTournament(btn.dataset.template);
       else startWheel(btn.dataset.template);
     }));
+    if (mode === 'wheel') {
+      const addBtn = document.querySelector('#newCustomWheel');
+      if (addBtn) addBtn.addEventListener('click', () => renderCustomWheelEditor());
+      document.querySelectorAll('[data-custom-play]').forEach(btn => btn.addEventListener('click', () => startCustomWheel(btn.dataset.customPlay)));
+      document.querySelectorAll('[data-custom-edit]').forEach(btn => btn.addEventListener('click', () => renderCustomWheelEditor(btn.dataset.customEdit)));
+      document.querySelectorAll('[data-custom-delete]').forEach(btn => btn.addEventListener('click', () => {
+        const wheel = customWheels.find(w => w.id === btn.dataset.customDelete);
+        if (!wheel || !confirm(`刪除「${wheel.name}」？`)) return;
+        customWheels = customWheels.filter(w => w.id !== wheel.id);
+        saveCustomWheels();
+        renderTemplatePicker('wheel');
+      }));
+    }
   }
 
   function foodCard(dish, extraClass = '') {
@@ -373,6 +550,7 @@
       const rejected = pair.find(d => d.id === card.dataset.dish);
       const survivor = pair.find(d => d.id !== card.dataset.dish);
       recordElimination(rejected.id);
+      playLoseSound();
       document.querySelectorAll('.food-card').forEach(b => b.disabled = true);
       card.classList.add('loser');
       const survivorCard = document.querySelector(`[data-dish="${survivor.id}"]`);
@@ -387,56 +565,151 @@
     }));
   }
 
+  function chooseTournamentFinalMode() {
+    const modes = ['hidden','duel','direct','lottery'].filter(m => m !== lastTournamentFinalMode);
+    const mode = randomOf(modes);
+    lastTournamentFinalMode = mode;
+    return mode;
+  }
+
   function renderTournamentTwist() {
     clearAsync();
+    const mode = chooseTournamentFinalMode();
+    tournament.finalMode = mode;
+    if (mode === 'hidden') return renderTournamentHiddenFinal();
+    if (mode === 'duel') return renderTournamentDuelFinal();
+    if (mode === 'direct') return renderTournamentDirectFinal();
+    return renderTournamentLotteryFinal();
+  }
+
+  function renderTournamentHiddenFinal() {
     tournament.fate = randomOf(tournament.survivors);
     tournament.decoys = tournament.survivors.filter(d => d.id !== tournament.fate.id);
     app.innerHTML = `<div class="shell">
       ${topbar(true)}
-      <section class="panel">
-        <div class="progress-row"><span>最後一輪</span><div class="progress-dots">${[1,2,3,4].map(() => `<i class="dot on"></i>`).join('')}</div></div>
+      <section class="panel final-stage">
+        <div class="progress-row"><span>最後一輪 · 🔒 命運保留席</span><div class="progress-dots">${[1,2,3,4].map(() => `<i class="dot on"></i>`).join('')}</div></div>
         <div class="question">剩下三個。<br>但我先偷走一個。</div>
-        <p class="hint">系統會保送一個候選。剩下兩個讓你再刪一個——但這輪有詐。</p>
-        <div class="final-three" id="finalThree">
-          ${tournament.survivors.map(d => `<div class="mini-food" data-mini="${d.id}"><span><span class="emoji">${d.emoji}</span><br>${d.name}</span></div>`).join('')}
-        </div>
+        <p class="hint">這次是經典煙霧彈。剩下兩個讓你再刪一個。</p>
+        <div class="final-three" id="finalThree">${tournament.survivors.map(d => `<div class="mini-food" data-mini="${d.id}"><span><span class="emoji">${d.emoji}</span><br>${d.name}</span></div>`).join('')}</div>
         <div class="twist-banner" id="twistBanner">命運正在偷偷動手腳…</div>
         <div class="duel" id="decoyDuel" style="opacity:.25;pointer-events:none">${foodCard(tournament.decoys[0])}${foodCard(tournament.decoys[1])}</div>
-        <div class="speech" id="speech">嘴巴說都可以，手倒是很誠實。</div>
+        <div class="speech" id="speech">這輪有詐，但哪裡有詐先不告訴你。</div>
       </section>
     </div>`;
     attachBack(renderHome);
+    playClickSound();
     later(() => {
       const fateMini = document.querySelector(`[data-mini="${tournament.fate.id}"]`);
       fateMini.classList.add('fate','mystery');
       fateMini.innerHTML = '<span>🔒<br>命運保留席</span>';
-      document.querySelector('#twistBanner').textContent = '好，一個被我藏起來了。現在這兩個，再刪一個。';
+      document.querySelector('#twistBanner').textContent = '一個被藏起來了。現在這兩個，再刪一個。';
       const duel = document.querySelector('#decoyDuel');
       duel.style.opacity = '1';
       duel.style.pointerEvents = 'auto';
       duel.querySelectorAll('.food-card').forEach(card => card.addEventListener('click', () => {
         const rejected = tournament.decoys.find(d => d.id === card.dataset.dish);
         recordElimination(rejected.id);
+        playLoseSound();
         duel.querySelectorAll('.food-card').forEach(b => b.disabled = true);
         card.classList.add('decoy-hit');
-        document.querySelector('#speech').textContent = `${rejected.name} 又被你刪了。很好——但剛剛被我藏起來的才是答案。`;
-        later(() => renderResult(tournament.fate, 'tournament', `你最後那一下其實是煙霧彈。命運保留席裡的是——${tournament.fate.name}。`), 620);
+        document.querySelector('#speech').textContent = `${rejected.name} 被你刪了——但真正答案還在鎖裡。`;
+        later(() => renderResult(tournament.fate, 'tournament', `這次是煙霧彈。命運保留席裡的是——${tournament.fate.name}。`), 560);
       }));
-    }, 760);
+    }, 650);
   }
 
-  function startWheel(templateId = 'all') {
+  function renderTournamentDuelFinal() {
+    const systemOut = randomOf(tournament.survivors);
+    const finalists = tournament.survivors.filter(d => d.id !== systemOut.id);
+    app.innerHTML = `<div class="shell">
+      ${topbar(true)}
+      <section class="panel final-stage">
+        <div class="progress-row"><span>最後一輪 · ⚔️ 最後二選一</span><div class="progress-dots">${[1,2,3,4].map(() => `<i class="dot on"></i>`).join('')}</div></div>
+        <div class="question">這次不玩煙霧彈。<br>系統先砍一個。</div>
+        <div class="twist-banner system-out">💨 ${systemOut.name} 被系統先請出場</div>
+        <p class="hint">剩下兩個，點你「比較不想吃」的；另一個就是答案。</p>
+        <div class="duel" id="finalDuel">${foodCard(finalists[0])}${foodCard(finalists[1])}</div>
+        <div class="speech" id="speech">這次答案真的在你手上。</div>
+      </section>
+    </div>`;
+    attachBack(renderHome);
+    playClickSound();
+    document.querySelectorAll('#finalDuel .food-card').forEach(card => card.addEventListener('click', () => {
+      const rejected = finalists.find(d => d.id === card.dataset.dish);
+      const winner = finalists.find(d => d.id !== card.dataset.dish);
+      recordElimination(rejected.id);
+      playLoseSound();
+      document.querySelectorAll('#finalDuel .food-card').forEach(b => b.disabled = true);
+      card.classList.add('loser');
+      document.querySelector(`[data-dish="${winner.id}"]`).classList.add('winner');
+      document.querySelector('#speech').textContent = `${rejected.name} 出局。這次沒有詐，${winner.name} 就是答案。`;
+      later(() => renderResult(winner, 'tournament', `最後二選一，由你親手留下了 ${winner.name}。`), 560);
+    }));
+  }
+
+  function renderTournamentDirectFinal() {
+    app.innerHTML = `<div class="shell">
+      ${topbar(true)}
+      <section class="panel final-stage">
+        <div class="progress-row"><span>最後一輪 · ❤️ 直覺點名</span><div class="progress-dots">${[1,2,3,4].map(() => `<i class="dot on"></i>`).join('')}</div></div>
+        <div class="question">反過來。<br>這次直接選最想吃的。</div>
+        <p class="hint">三個都活著。別刪人，直接點你現在最想吃的那個。</p>
+        <div class="final-three final-select-grid">${tournament.survivors.map(d => `<button class="mini-food final-choice" data-final-select="${d.id}"><span><span class="emoji">${d.emoji}</span><br>${d.name}</span></button>`).join('')}</div>
+        <div class="speech" id="speech">沒有套路。你選誰就是誰。</div>
+      </section>
+    </div>`;
+    attachBack(renderHome);
+    document.querySelectorAll('[data-final-select]').forEach(btn => btn.addEventListener('click', () => {
+      const chosen = tournament.survivors.find(d => d.id === btn.dataset.finalSelect);
+      playClickSound();
+      document.querySelectorAll('[data-final-select]').forEach(b => b.disabled = true);
+      btn.classList.add('picked');
+      document.querySelector('#speech').textContent = `手比嘴誠實。你剛剛直接點了 ${chosen.name}。`;
+      later(() => renderResult(chosen, 'tournament', `這輪沒有陰你。你自己點名了 ${chosen.name}。`), 420);
+    }));
+  }
+
+  function renderTournamentLotteryFinal() {
+    const chosen = randomOf(tournament.survivors);
+    app.innerHTML = `<div class="shell">
+      ${topbar(true)}
+      <section class="panel final-stage">
+        <div class="progress-row"><span>最後一輪 · 🎰 命運抽籤</span><div class="progress-dots">${[1,2,3,4].map(() => `<i class="dot on"></i>`).join('')}</div></div>
+        <div class="question">手收好。<br>這次命運自己抽。</div>
+        <p class="hint">三個候選輪流亮起，停在哪個就吃哪個。</p>
+        <div class="final-three lottery-grid">${tournament.survivors.map(d => `<div class="mini-food lottery-item" data-mini="${d.id}"><span><span class="emoji">${d.emoji}</span><br>${d.name}</span></div>`).join('')}</div>
+        <div class="twist-banner" id="twistBanner">抽籤中…</div>
+      </section>
+    </div>`;
+    attachBack(renderHome);
+    let step = 0;
+    const items = [...document.querySelectorAll('.lottery-item')];
+    const timer = every(() => {
+      items.forEach(x => x.classList.remove('lottery-active'));
+      items[step % items.length].classList.add('lottery-active');
+      playTone(360 + step*18,.025,'square',.018);
+      step += 1;
+      if (step >= 11) {
+        stopHandle(timer);
+        items.forEach(x => x.classList.remove('lottery-active'));
+        const hit = document.querySelector(`[data-mini="${chosen.id}"]`);
+        hit.classList.add('picked');
+        document.querySelector('#twistBanner').textContent = `停！這輪是 ${chosen.name}。`;
+        later(() => renderResult(chosen, 'tournament', `命運抽籤停在 ${chosen.name}。這次你連手都沒得怪。`), 650);
+      }
+    }, 135);
+  }
+  function renderWheelBoard(items, meta = {}) {
     clearAsync();
-    const {template, pool} = wheelPool(templateId);
-    const desired = Math.min(Number(template.wheelCount) || 8, 8);
-    const targetCount = Math.max(1, Math.min(desired, pool.length));
-    wheelItems = sample(pool, targetCount);
+    wheelItems = items.slice(0,8);
+    wheelContext = meta;
     const count = wheelItems.length;
     const slice = 360 / count;
-    const palette = ['#f6ce62','#4b70d8','#7fc07d','#e65747','#f6b58e','#d980e7','#9da7ed','#8cccec','#fff1a6','#b4efb2'];
+    const palette = ['#f6ce62','#4b70d8','#7fc07d','#e65747','#f6b58e','#d980e7','#9da7ed','#8cccec'];
     const stops = wheelItems.map((_,i) => `${palette[i % palette.length]} ${i*slice}deg ${(i+1)*slice}deg`).join(',');
     const background = `repeating-conic-gradient(from 0deg, rgba(21,21,21,.9) 0 1.05deg, transparent 1.05deg ${slice}deg), conic-gradient(from 0deg, ${stops})`;
-    const radiusPct = count >= 10 ? 34 : count >= 8 ? 35 : 36;
+    const radiusPct = count >= 8 ? 35 : 36;
     const labels = wheelItems.map((d, i) => {
       const angle = i * slice + slice / 2;
       const rad = angle * Math.PI / 180;
@@ -444,23 +717,94 @@
       const top = 50 - Math.cos(rad) * radiusPct;
       let textRotation = angle;
       if (angle > 90 && angle < 270) textRotation += 180;
-      return `<span class="wheel-label wheel-count-${count}" data-wheel-index="${i}" data-dish-id="${d.id}" style="left:${left.toFixed(3)}%;top:${top.toFixed(3)}%;transform:translate(-50%,-50%) rotate(${textRotation}deg)"><span class="wheel-label-inner"><i>${d.emoji}</i><b>${wheelLabelHtml(d.name)}</b></span></span>`;
+      return `<span class="wheel-label wheel-count-${count}" data-wheel-index="${i}" data-dish-id="${d.id}" style="left:${left.toFixed(3)}%;top:${top.toFixed(3)}%;transform:translate(-50%,-50%) rotate(${textRotation}deg)"><span class="wheel-label-inner"><i>${d.emoji || '🎯'}</i><b>${wheelLabelHtml(d.name)}</b></span></span>`;
     }).join('');
     app.innerHTML = `<div class="shell">
       ${topbar(true)}
       <section class="panel wheel-panel">
-        <div class="progress-row"><span>命運大輪盤 · ${template.label || '全部隨機'}</span><span>${count} 選 1</span></div>
-        <div class="question">不要想。轉就對了。</div>
-        <p class="hint">${template.description || '今天的命運就交給這一圈。'}</p>
+        <div class="progress-row"><span>${meta.title || '命運大輪盤'}</span><span>${count} 選 1</span></div>
+        <div class="question">${meta.question || '不要想。轉就對了。'}</div>
+        <p class="hint">${meta.description || '今天的命運就交給這一圈。'}</p>
         <div class="wheel-wrap"><div class="pointer"><span></span></div><div class="wheel" id="wheel" style="background:${background}">${labels}</div><button class="wheel-hub" data-spin>轉！</button></div>
         <button class="primary wheel-spin" data-spin>開始轉 🎡</button>
-        <button class="link-btn wheel-change" id="changeWheelTemplate">換一組料理模板</button>
-        <div class="wheel-note">宇宙不負責售後服務。</div>
+        <button class="link-btn wheel-change" id="changeWheelTemplate">${meta.changeLabel || '換一組料理模板'}</button>
+        <div class="wheel-note">${meta.note || '宇宙不負責售後服務。'}</div>
+      </section>
+    </div>`;
+    attachBack(meta.backAction || renderHome);
+    document.querySelectorAll('[data-spin]').forEach(btn => btn.addEventListener('click', spinWheel));
+    document.querySelector('#changeWheelTemplate').addEventListener('click', meta.changeAction || meta.backAction || renderHome);
+  }
+
+  function startWheel(templateId = 'all') {
+    const {template, pool} = wheelPool(templateId);
+    const desired = Math.min(Number(template.wheelCount) || 8, 8);
+    const items = sample(pool, Math.max(2, Math.min(desired, pool.length)));
+    renderWheelBoard(items, {
+      kind:'main',
+      templateId,
+      title:`命運大輪盤 · ${template.label || '全部隨機'}`,
+      description:template.description || '先決定大方向，想更細再繼續轉。',
+      onFinish:chosen => renderResult(chosen,'wheel',`大項目先決定：${chosen.name}。想更細還可以再轉一次。`),
+      backAction:() => renderTemplatePicker('wheel'),
+      changeAction:() => renderTemplatePicker('wheel'),
+      changeLabel:'換一組料理模板',
+      weighted:true
+    });
+  }
+
+  function startDetailWheel(parentDish) {
+    const detail = detailItemsFor(parentDish);
+    if (detail.length < 2) return showToast('這個項目目前沒有足夠細項。');
+    const items = sample(detail, Math.min(8, detail.length));
+    renderWheelBoard(items, {
+      kind:'detail',
+      parentDish,
+      title:`細項輪盤 · ${parentDish.name}`,
+      question:`${parentDish.name} 決定了，再細一點？`,
+      description:'不想細分也可以直接回去接受大項目。',
+      onFinish:chosen => renderResult(chosen,'wheel-detail',`大項目是 ${parentDish.name}，細項最後停在 ${chosen.name}。`),
+      backAction:() => renderResult(parentDish,'wheel',`大項目先決定：${parentDish.name}。你可以直接接受，或再轉細項。`),
+      changeAction:() => renderResult(parentDish,'wheel',`大項目先決定：${parentDish.name}。你可以直接接受，或再轉細項。`),
+      changeLabel:`← 不細分，回到 ${parentDish.name}`,
+      weighted:true
+    });
+  }
+
+  function startCustomWheel(id) {
+    const saved = customWheels.find(w => w.id === id);
+    if (!saved) return showToast('找不到這個輪盤。');
+    const items = saved.items.map((name,index) => ({id:`custom-${saved.id}-${index}`,name,emoji:'🎯',category:'自定義'}));
+    renderWheelBoard(items, {
+      kind:'custom',
+      customWheelId:saved.id,
+      title:`自定義 · ${saved.name}`,
+      description:'你自己出的題，這次命運只負責抽。',
+      onFinish:chosen => renderCustomWheelResult(chosen,saved),
+      backAction:() => renderTemplatePicker('wheel'),
+      changeAction:() => renderTemplatePicker('wheel'),
+      changeLabel:'← 返回輪盤列表',
+      weighted:false
+    });
+  }
+
+  function renderCustomWheelResult(chosen, saved) {
+    clearAsync();
+    app.innerHTML = `<div class="shell">
+      ${topbar(true)}
+      <section class="panel result-card custom-result">
+        <div class="result-emoji">🎯</div>
+        <div class="result-label">${escapeHtml(saved.name)} 的結果</div>
+        <div class="result-name">${escapeHtml(chosen.name)}</div>
+        <div class="speech">你自己做的輪盤，這次真的不能怪系統。</div>
+        <div class="actions"><button class="primary" id="customAgain">再轉一次</button><button class="secondary" id="customBack">返回輪盤列表</button></div>
       </section>
     </div>`;
     attachBack(() => renderTemplatePicker('wheel'));
-    document.querySelectorAll('[data-spin]').forEach(btn => btn.addEventListener('click', spinWheel));
-    document.querySelector('#changeWheelTemplate').addEventListener('click', () => renderTemplatePicker('wheel'));
+    playWinSound();
+    celebrate();
+    document.querySelector('#customAgain').addEventListener('click', () => startCustomWheel(saved.id));
+    document.querySelector('#customBack').addEventListener('click', () => renderTemplatePicker('wheel'));
   }
   function ratingWeight(dish) {
     const ds = dishStat(dish.id);
@@ -485,17 +829,39 @@
 
   function spinWheel() {
     const buttons = [...document.querySelectorAll('[data-spin]')];
-    if (!buttons.length || buttons.some(b => b.disabled)) return;
-    buttons.forEach(b => { b.disabled = true; if (b.classList.contains('wheel-spin')) b.textContent = '命運正在亂來…'; });
-    const chosen = weightedChoice(wheelItems);
+    if (!buttons.length || buttons.some(b => b.disabled) || !wheelItems.length) return;
+    buttons.forEach(b => {
+      b.disabled = true;
+      if (b.classList.contains('wheel-spin')) b.textContent = '命運正在亂來…';
+    });
+
+    playSpinTicks();
+    const meta = wheelContext || {};
+    const chosen = meta.weighted === false ? randomOf(wheelItems) : weightedChoice(wheelItems);
     const idx = wheelItems.findIndex(d => d.id === chosen.id);
     const slice = 360 / wheelItems.length;
     const center = idx * slice + slice / 2;
     const rotation = 360 * 6 + (360 - center);
     const wheel = document.querySelector('#wheel');
-    requestAnimationFrame(() => { wheel.style.transform = `rotate(${rotation}deg)`; });
-    later(() => { const hit = document.querySelector(`[data-wheel-index="${idx}"] .wheel-label-inner`); if (hit) hit.classList.add('wheel-hit'); }, 1550);
-    later(() => renderResult(chosen, 'wheel', `宇宙已經決定了：${chosen.name}。不接受申訴。`), 1950);
+
+    requestAnimationFrame(() => {
+      wheel.classList.add('wheel-spinning');
+      wheel.style.transform = `rotate(${rotation}deg)`;
+    });
+
+    later(() => {
+      const hit = document.querySelector(`[data-wheel-index="${idx}"] .wheel-label-inner`);
+      if (hit) hit.classList.add('wheel-hit');
+      playTone(880, .1, 'sine', .04);
+    }, 1550);
+
+    later(() => {
+      if (typeof meta.onFinish === 'function') {
+        meta.onFinish(chosen);
+        return;
+      }
+      renderResult(chosen, 'wheel', `宇宙已經決定了：${chosen.name}。不接受申訴。`);
+    }, 1950);
   }
 
   function renderHellIntro() {
@@ -642,32 +1008,69 @@
     return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('附近 ' + dish.name);
   }
 
-  function renderResult(dish, mode, copy) {
+  function renderResult(dish, mode, copy, meta = {}) {
     clearAsync();
-    const modeTitle = mode === 'tournament' ? '三問淘汰賽' : mode === 'wheel' ? '命運大輪盤' : '地獄直覺快答';
+    const isCustom = mode === 'custom-wheel';
+    const safeName = escapeHtml(dish.name);
+    const safeCopy = escapeHtml(copy);
+    const detailItems = (meta.allowDetail || mode === 'wheel') ? detailItemsFor(dish) : [];
+    const modeTitle = mode === 'tournament'
+      ? '三問淘汰賽'
+      : mode === 'wheel-detail'
+        ? '細項輪盤'
+        : mode === 'custom-wheel'
+          ? '自定義輪盤'
+          : mode === 'wheel'
+            ? '命運大輪盤'
+            : '地獄直覺快答';
+
+    const nearbyHtml = isCustom ? '' : `<div class="nearby-box">
+      <div class="nearby-title">📍 附近哪裡吃 ${safeName}？</div>
+      <p>直接交給 Google 地圖找附近店家。</p>
+      <a class="maps-direct-btn" href="${googleMapsSearchUrl(dish)}" target="_blank" rel="noopener">在 Google 地圖搜尋附近 ${safeName} →</a>
+    </div>`;
+
+    const actionsHtml = isCustom
+      ? `<div class="actions">
+          <button class="primary" id="customSpinAgain">再轉一次 🎡</button>
+          <button class="secondary" id="customDone">完成，回首頁</button>
+        </div>`
+      : `<div class="actions">
+          <button class="primary" id="acceptResult">${mode === 'hell' ? '我接受審判' : '認命，就吃這個'}</button>
+          ${detailItems.length >= 2 ? `<button class="secondary detail-wheel-btn" id="detailWheelBtn">再轉「${safeName}」細項 🎡</button>` : ''}
+          ${mode === 'hell' ? '' : '<button class="secondary" id="regretBtn">我想反悔</button>'}
+        </div>
+        ${mode === 'hell' ? '<button class="tiny-regret" id="regretBtn">你連地獄模式都想反悔？</button>' : ''}`;
+
     app.innerHTML = `<div class="shell">
       ${topbar(true)}
       <section class="panel result-card">
-        <div class="result-emoji">${dish.emoji}</div>
+        <div class="result-emoji">${dish.emoji || '🎯'}</div>
         <div class="result-label">${modeTitle} 的判決</div>
-        <div class="result-name">${dish.name}</div>
-        <div class="result-copy">${copy}</div>
-        <div class="speech">${mode === 'hell' ? '你自己按的，現在不要怪我。' : '好了，晚餐有答案了。問題只剩你敢不敢承認。'}</div>
-        <div class="nearby-box">
-          <div class="nearby-title">📍 附近哪裡吃 ${dish.name}？</div>
-          <p>直接交給 Google 地圖找附近店家。</p>
-          <a class="maps-direct-btn" href="${googleMapsSearchUrl(dish)}" target="_blank" rel="noopener">在 Google 地圖搜尋附近 ${dish.name} →</a>
-        </div>
-        <div class="actions">
-          <button class="primary" id="acceptResult">${mode === 'hell' ? '我接受審判' : '認命，就吃這個'}</button>
-          ${mode === 'hell' ? '' : '<button class="secondary" id="regretBtn">我想反悔</button>'}
-        </div>
-        ${mode === 'hell' ? '<button class="tiny-regret" id="regretBtn">你連地獄模式都想反悔？</button>' : ''}
+        <div class="result-name">${safeName}</div>
+        <div class="result-copy">${safeCopy}</div>
+        <div class="speech">${isCustom ? '你自己做的輪盤，命運只是負責按下去。' : mode === 'wheel' && detailItems.length >= 2 ? '大方向決定了。想更精準，可以再轉一次細項。' : mode === 'hell' ? '你自己按的，現在不要怪我。' : '好了，晚餐有答案了。問題只剩你敢不敢承認。'}</div>
+        ${nearbyHtml}
+        ${actionsHtml}
       </section>
     </div>`;
     attachBack(renderHome);
+    playWinSound();
+    celebrate();
+
+    if (isCustom) {
+      const context = {...(wheelContext || {})};
+      const items = [...wheelItems];
+      document.querySelector('#customSpinAgain').addEventListener('click', () => renderWheelBoard(items, context));
+      document.querySelector('#customDone').addEventListener('click', renderHome);
+      return;
+    }
+
     document.querySelector('#acceptResult').addEventListener('click', () => renderRating(dish, mode));
-    document.querySelector('#regretBtn').addEventListener('click', () => handleRegret(dish, mode));
+    const detailBtn = document.querySelector('#detailWheelBtn');
+    if (detailBtn) detailBtn.addEventListener('click', () => startDetailWheel(dish));
+    const regretBtn = document.querySelector('#regretBtn');
+    if (regretBtn) regretBtn.addEventListener('click', () => handleRegret(dish, mode));
   }
 
   function handleRegret(dish, mode) {
@@ -696,7 +1099,7 @@
 
   function restartMode(mode) {
     if (mode === 'tournament') renderTemplatePicker('tournament');
-    if (mode === 'wheel') renderTemplatePicker('wheel');
+    if (mode === 'wheel' || mode === 'wheel-detail') renderTemplatePicker('wheel');
     if (mode === 'hell') renderHome();
   }
 
