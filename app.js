@@ -5,7 +5,6 @@
   const REGRET_LINES = window.WTE_REGRET_LINES || [];
   const HELL_QUESTIONS = window.WTE_HELL_QUESTIONS || [];
   const TEMPLATES = window.WTE_TEMPLATES || {};
-  const PLACES_KEY = window.WTE_GOOGLE_PLACES_KEY || '';
   const STORAGE_KEY = 'what-to-eat-v01';
   const app = document.querySelector('#app');
   const toastEl = document.querySelector('#toast');
@@ -465,50 +464,8 @@
     renderResult(chosen, 'hell', `你自己按的。地獄把答案算成了 ${chosen.name}。現在不要怪我。`);
   }
 
-  function googleMapsSearchUrl(dish, coords = null) {
-    const near = coords ? ` ${coords.latitude},${coords.longitude}` : '';
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dish.name + near)}`;
-  }
-
-  function getBrowserLocation() {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) return reject(new Error('NO_GEO'));
-      navigator.geolocation.getCurrentPosition(
-        p => resolve({latitude:p.coords.latitude, longitude:p.coords.longitude}),
-        reject,
-        {enableHighAccuracy:false, timeout:8000, maximumAge:300000}
-      );
-    });
-  }
-
-  function nearbyFallback(dish, coords, message) {
-    const box = document.querySelector('#nearbyResults');
-    if (!box) return;
-    box.innerHTML = `<div class="nearby-fallback">${message}</div><a class="maps-link" href="${googleMapsSearchUrl(dish, coords)}" target="_blank" rel="noopener">在 Google 地圖搜尋附近 ${dish.name} →</a>`;
-  }
-
-  async function findNearbyRestaurants(dish) {
-    const btn = document.querySelector('#nearbyBtn');
-    if (!btn) return;
-    btn.disabled = true;
-    btn.textContent = '正在取得位置…';
-    let coords;
-    try { coords = await getBrowserLocation(); }
-    catch {
-      nearbyFallback(dish, null, '沒有取得定位權限，先用 Google 地圖搜尋。');
-      btn.disabled = false;
-      btn.textContent = '再試一次附近餐廳';
-      return;
-    }
-    if (!PLACES_KEY) {
-      nearbyFallback(dish, coords, '已取得位置。要直接列出 3～5 間真實店家，需要設定 Google Places API key；目前先開附近地圖搜尋。');
-      btn.disabled = false;
-      btn.textContent = '重新找附近餐廳';
-      return;
-    }
-    nearbyFallback(dish, coords, 'Google Places key 已設定；目前先以附近地圖搜尋顯示結果。');
-    btn.disabled = false;
-    btn.textContent = '重新找附近餐廳';
+  function googleMapsSearchUrl(dish) {
+    return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('附近 ' + dish.name);
   }
 
   function renderResult(dish, mode, copy) {
@@ -524,9 +481,8 @@
         <div class="speech">${mode === 'hell' ? '你自己按的，現在不要怪我。' : '好了，晚餐有答案了。問題只剩你敢不敢承認。'}</div>
         <div class="nearby-box">
           <div class="nearby-title">📍 附近哪裡吃 ${dish.name}？</div>
-          <p>取得定位後，可直接搜尋你附近的對應餐廳。</p>
-          <button class="secondary" id="nearbyBtn">找附近餐廳</button>
-          <div id="nearbyResults"></div>
+          <p>直接交給 Google 地圖找附近店家。</p>
+          <a class="maps-direct-btn" href="${googleMapsSearchUrl(dish)}" target="_blank" rel="noopener">在 Google 地圖搜尋附近 ${dish.name} →</a>
         </div>
         <div class="actions">
           <button class="primary" id="acceptResult">${mode === 'hell' ? '我接受審判' : '認命，就吃這個'}</button>
@@ -537,7 +493,6 @@
     </div>`;
     attachBack(renderHome);
     document.querySelector('#acceptResult').addEventListener('click', () => renderRating(dish, mode));
-    document.querySelector('#nearbyBtn').addEventListener('click', () => findNearbyRestaurants(dish));
     document.querySelector('#regretBtn').addEventListener('click', () => handleRegret(dish, mode));
   }
 
