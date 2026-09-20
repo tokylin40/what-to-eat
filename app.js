@@ -5,6 +5,7 @@
   const REGRET_LINES = window.WTE_REGRET_LINES || [];
   const HELL_QUESTIONS = window.WTE_HELL_QUESTIONS || [];
   const TEMPLATES = window.WTE_TEMPLATES || {};
+  const MAIN_OPTIONS = window.WTE_MAIN_OPTIONS || [];
   const STORAGE_KEY = 'what-to-eat-v01';
   const app = document.querySelector('#app');
   const toastEl = document.querySelector('#toast');
@@ -92,7 +93,7 @@
   }
 
   function getDish(id) {
-    return DISHES.find(d => d.id === id);
+    return MAIN_OPTIONS.find(d => d.id === id) || DISHES.find(d => d.id === id);
   }
 
   function clearAsync() {
@@ -247,11 +248,29 @@
     return {template, pool: pool.length ? pool : DISHES};
   }
 
+  function gamePool(templateId) {
+    const detailModes = ['snack','late','dessert'];
+    if (detailModes.includes(templateId)) return templatePool(templateId);
+    const template = TEMPLATES[templateId] || TEMPLATES.all || {label:'隨便都可以'};
+    const pool = templateId === 'all'
+      ? MAIN_OPTIONS
+      : MAIN_OPTIONS.filter(d => Array.isArray(d.tags) && d.tags.includes(templateId));
+    return {template, pool: pool.length ? pool : MAIN_OPTIONS};
+  }
+  function tournamentMainPool() {
+    return MAIN_OPTIONS;
+  }
+  function tournamentTemplateEntries() {
+    const allowed = ['all','rice','noodle','hotpot','meat','fastfood','international','breakfast','healthy'];
+    return allowed.map(id => [id, TEMPLATES[id]]).filter(([,t]) => t);
+  }
+
   function renderTemplatePicker(mode) {
     clearAsync();
-    const entries = Object.entries(TEMPLATES);
+    let entries = mode === 'tournament' ? tournamentTemplateEntries() : Object.entries(TEMPLATES);
+    if (mode === 'tournament') entries = entries.map(([id,t]) => [id, id === 'all' ? {...t, label:'隨機主食', description:'不知道吃什麼？只抽正餐主食，不混小吃、消夜、甜食。'} : t]);
     const title = mode === 'tournament' ? '三問淘汰賽' : '命運大輪盤';
-    const copy = mode === 'tournament' ? '先選現在最想吃的大方向，再開始三組獨立對決。' : '先選現在想吃的方向，再把最後決定交給命運。';
+    const copy = mode === 'tournament' ? '真的不知道就直接按「隨機主食」；有方向再挑下面分類。' : '先選現在想吃的方向，再把最後決定交給命運。';
     app.innerHTML = `<div class="shell">
       ${topbar(true)}
       <section class="panel">
@@ -259,7 +278,7 @@
         <div class="question">現在想吃哪一種？</div>
         <p class="hint">${copy}</p>
         <div class="template-grid">
-          ${entries.map(([id,t]) => `<button class="template-card" data-template="${id}"><span class="template-emoji">${t.emoji || '🍽️'}</span><span><b>${t.label}</b><small>${t.description || ''}</small></span></button>`).join('')}
+          ${entries.map(([id,t]) => `<button class="template-card ${mode === 'tournament' && id === 'all' ? 'template-featured' : ''}" data-template="${id}"><span class="template-emoji">${t.emoji || '🍽️'}</span><span><b>${t.label}</b><small>${t.description || ''}</small></span></button>`).join('')}
         </div>
       </section>
     </div>`;
@@ -280,12 +299,12 @@
 
   function startTournament(templateId = 'all') {
     clearAsync();
-    const {template, pool} = templatePool(templateId);
-    const source = pool.length >= 6 ? pool : DISHES;
+    const {template, pool} = gamePool(templateId);
+    const source = pool.length >= 6 ? pool : tournamentMainPool();
     const six = sample(source, 6);
     tournament = {
       templateId,
-      templateLabel:template.label || '全部隨機',
+      templateLabel:templateId === 'all' ? '隨機主食' : (template.label || '全部隨機'),
       pairs:[[six[0],six[1]],[six[2],six[3]],[six[4],six[5]]],
       round:0,
       survivors:[],
@@ -368,7 +387,7 @@
 
   function startWheel(templateId = 'all') {
     clearAsync();
-    const {template, pool} = templatePool(templateId);
+    const {template, pool} = gamePool(templateId);
     const desired = Number(template.wheelCount) || 8;
     const count = Math.max(6, Math.min(12, Math.min(desired, pool.length)));
     wheelItems = sample(pool, count);
@@ -521,7 +540,7 @@
   }
 
   function hellCandidatePool() {
-    let pool = [...DISHES];
+    let pool = [...MAIN_OPTIONS];
     const answers = hell.answers || [];
     const wantsLight = answers.some(p => p.flavor === 'light');
     const wantedCarb = answers.map(p => p.carb).find(Boolean);
@@ -676,9 +695,17 @@
     document.querySelector('#seeStatsBtn').addEventListener('click', renderStomach);
   }
 
+  function statsDishUniverse() {
+    const map = new Map();
+    MAIN_OPTIONS.forEach(d => map.set(d.id, d));
+    DISHES.forEach(d => {
+      if (stats.dishes[d.id]) map.set(d.id, d);
+    });
+    return [...map.values()];
+  }
   function favoriteDish() {
     let best = null;
-    DISHES.forEach(d => {
+    statsDishUniverse().forEach(d => {
       const s = dishStat(d.id);
       const r = s.ratings;
       const score = r.love * 4 + r.ok * 1.5 + s.selected * .3 - r.no * 2;
@@ -690,7 +717,7 @@
   function preferenceRanking(limit = 10) {
     const PRIOR_MEAN = 2.7;
     const PRIOR_WEIGHT = 4;
-    return DISHES.map(dish => {
+    return statsDishUniverse().map(dish => {
       const ds = dishStat(dish.id);
       const r = ds.ratings;
       const votes = r.love + r.ok + r.meh + r.no;
@@ -716,7 +743,7 @@
 
   function mostEliminated() {
     let best = null;
-    DISHES.forEach(d => {
+    statsDishUniverse().forEach(d => {
       const n = dishStat(d.id).eliminated;
       if (!best || n > best.count) best = {dish:d, count:n};
     });

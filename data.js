@@ -199,3 +199,568 @@ const WTE_V04_TEMPLATES=[["rice","飯","🍚","今天就想吃一碗飯，便當
     };
   });
 })();
+
+
+window.WTE_MAIN_OPTIONS = [
+  {
+    "id": "main-bento",
+    "name": "便當",
+    "emoji": "🍱",
+    "category": "飯類",
+    "tags": [
+      "rice"
+    ],
+    "spice": "none",
+    "flavor": "rich",
+    "meal": "simple",
+    "price": "low",
+    "carb": "rice",
+    "temp": "hot"
+  },
+  {
+    "id": "main-braised-rice",
+    "name": "滷肉飯／雞肉飯",
+    "emoji": "🍚",
+    "category": "飯類",
+    "tags": [
+      "rice"
+    ],
+    "spice": "none",
+    "flavor": "rich",
+    "meal": "simple",
+    "price": "low",
+    "carb": "rice",
+    "temp": "hot"
+  },
+  {
+    "id": "main-fried-rice",
+    "name": "炒飯",
+    "emoji": "🍳",
+    "category": "飯類",
+    "tags": [
+      "rice"
+    ],
+    "spice": "none",
+    "flavor": "rich",
+    "meal": "simple",
+    "price": "low",
+    "carb": "rice",
+    "temp": "hot"
+  },
+  {
+    "id": "main-curry-rice",
+    "name": "咖哩飯",
+    "emoji": "🍛",
+    "category": "飯類",
+    "tags": [
+      "rice",
+      "international"
+    ],
+    "spice": "mild",
+    "flavor": "rich",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "rice",
+    "temp": "hot"
+  },
+  {
+    "id": "main-donburi",
+    "name": "日式丼飯",
+    "emoji": "🍚",
+    "category": "日式",
+    "tags": [
+      "rice",
+      "international"
+    ],
+    "spice": "none",
+    "flavor": "rich",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "rice",
+    "temp": "hot"
+  },
+  {
+    "id": "main-roast-meat",
+    "name": "燒臘",
+    "emoji": "🍖",
+    "category": "港式",
+    "tags": [
+      "rice",
+      "meat",
+      "international"
+    ],
+    "spice": "none",
+    "flavor": "rich",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "rice",
+    "temp": "hot"
+  },
+  {
+    "id": "main-hainanese",
+    "name": "海南雞飯",
+    "emoji": "🍗",
+    "category": "東南亞",
+    "tags": [
+      "rice",
+      "international"
+    ],
+    "spice": "none",
+    "flavor": "light",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "rice",
+    "temp": "hot"
+  },
+  {
+    "id": "main-healthy-box",
+    "name": "健康餐盒",
+    "emoji": "🥗",
+    "category": "健康",
+    "tags": [
+      "rice",
+      "healthy"
+    ],
+    "spice": "none",
+    "flavor": "light",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "rice",
+    "temp": "hot"
+  },
+  {
+    "id": "main-beef-noodle",
+    "name": "牛肉麵",
+    "emoji": "🍜",
+    "category": "麵類",
+    "tags": [
+      "noodle"
+    ],
+    "spice": "mild",
+    "flavor": "rich",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "noodle",
+    "temp": "hot"
+  },
+  {
+    "id": "main-taiwan-noodle",
+    "name": "台式麵",
+    "emoji": "🍜",
+    "category": "麵類",
+    "tags": [
+      "noodle"
+    ],
+    "spice": "none",
+    "flavor": "light",
+    "meal": "simple",
+    "price": "low",
+    "carb": "noodle",
+    "temp": "hot"
+  },
+  {
+    "id": "main-pot-noodle",
+    "name": "鍋燒麵",
+    "emoji": "🍜",
+    "category": "麵類",
+    "tags": [
+      "noodle"
+    ],
+    "spice": "none",
+    "flavor": "light",
+    "meal": "simple",
+    "price": "low",
+    "carb": "noodle",
+    "temp": "hot"
+  },
+  {
+    "id": "main-ramen",
+    "name": "拉麵",
+    "emoji": "🍜",
+    "category": "日式",
+    "tags": [
+      "noodle",
+      "international"
+    ],
+    "spice": "mild",
+    "flavor": "rich",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "noodle",
+    "temp": "hot"
+  },
+  {
+    "id": "main-udon-soba",
+    "name": "烏龍／蕎麥麵",
+    "emoji": "🍜",
+    "category": "日式",
+    "tags": [
+      "noodle",
+      "international"
+    ],
+    "spice": "none",
+    "flavor": "light",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "noodle",
+    "temp": "hot"
+  },
+  {
+    "id": "main-pho",
+    "name": "越南河粉",
+    "emoji": "🍜",
+    "category": "東南亞",
+    "tags": [
+      "noodle",
+      "international"
+    ],
+    "spice": "none",
+    "flavor": "light",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "noodle",
+    "temp": "hot"
+  },
+  {
+    "id": "main-pasta",
+    "name": "義大利麵",
+    "emoji": "🍝",
+    "category": "西式",
+    "tags": [
+      "noodle",
+      "international"
+    ],
+    "spice": "none",
+    "flavor": "rich",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "noodle",
+    "temp": "hot"
+  },
+  {
+    "id": "main-dumplings",
+    "name": "水餃／鍋貼",
+    "emoji": "🥟",
+    "category": "麵點",
+    "tags": [
+      "rice"
+    ],
+    "spice": "none",
+    "flavor": "rich",
+    "meal": "simple",
+    "price": "low",
+    "carb": "bread",
+    "temp": "hot"
+  },
+  {
+    "id": "main-dimsum",
+    "name": "小籠包／麵點",
+    "emoji": "🥟",
+    "category": "麵點",
+    "tags": [
+      "rice",
+      "international"
+    ],
+    "spice": "none",
+    "flavor": "rich",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "bread",
+    "temp": "hot"
+  },
+  {
+    "id": "main-hotpot",
+    "name": "火鍋",
+    "emoji": "🍲",
+    "category": "鍋類",
+    "tags": [
+      "hotpot",
+      "meat"
+    ],
+    "spice": "none",
+    "flavor": "rich",
+    "meal": "feast",
+    "price": "mid",
+    "carb": "none",
+    "temp": "hot"
+  },
+  {
+    "id": "main-mala-hotpot",
+    "name": "麻辣鍋",
+    "emoji": "🌶️",
+    "category": "鍋類",
+    "tags": [
+      "hotpot",
+      "meat"
+    ],
+    "spice": "hot",
+    "flavor": "rich",
+    "meal": "feast",
+    "price": "high",
+    "carb": "none",
+    "temp": "hot"
+  },
+  {
+    "id": "main-bbq",
+    "name": "燒肉",
+    "emoji": "🥩",
+    "category": "肉類",
+    "tags": [
+      "meat",
+      "international"
+    ],
+    "spice": "none",
+    "flavor": "rich",
+    "meal": "feast",
+    "price": "high",
+    "carb": "none",
+    "temp": "hot"
+  },
+  {
+    "id": "main-stirfry",
+    "name": "熱炒",
+    "emoji": "🍳",
+    "category": "肉類",
+    "tags": [
+      "meat"
+    ],
+    "spice": "mild",
+    "flavor": "rich",
+    "meal": "feast",
+    "price": "mid",
+    "carb": "none",
+    "temp": "hot"
+  },
+  {
+    "id": "main-teppanyaki",
+    "name": "鐵板燒",
+    "emoji": "🔥",
+    "category": "肉類",
+    "tags": [
+      "meat"
+    ],
+    "spice": "none",
+    "flavor": "rich",
+    "meal": "feast",
+    "price": "mid",
+    "carb": "none",
+    "temp": "hot"
+  },
+  {
+    "id": "main-steak",
+    "name": "牛排",
+    "emoji": "🥩",
+    "category": "西式",
+    "tags": [
+      "meat",
+      "international"
+    ],
+    "spice": "none",
+    "flavor": "rich",
+    "meal": "feast",
+    "price": "high",
+    "carb": "none",
+    "temp": "hot"
+  },
+  {
+    "id": "main-seafood",
+    "name": "海鮮料理",
+    "emoji": "🦐",
+    "category": "海鮮",
+    "tags": [
+      "meat",
+      "international"
+    ],
+    "spice": "none",
+    "flavor": "light",
+    "meal": "feast",
+    "price": "high",
+    "carb": "none",
+    "temp": "hot"
+  },
+  {
+    "id": "main-fastfood",
+    "name": "漢堡／速食",
+    "emoji": "🍔",
+    "category": "速食",
+    "tags": [
+      "fastfood"
+    ],
+    "spice": "none",
+    "flavor": "rich",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "bread",
+    "temp": "hot"
+  },
+  {
+    "id": "main-fried-chicken",
+    "name": "炸雞",
+    "emoji": "🍗",
+    "category": "速食",
+    "tags": [
+      "fastfood",
+      "meat"
+    ],
+    "spice": "mild",
+    "flavor": "rich",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "none",
+    "temp": "hot"
+  },
+  {
+    "id": "main-pizza",
+    "name": "披薩",
+    "emoji": "🍕",
+    "category": "西式",
+    "tags": [
+      "fastfood",
+      "international"
+    ],
+    "spice": "none",
+    "flavor": "rich",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "bread",
+    "temp": "hot"
+  },
+  {
+    "id": "main-sushi",
+    "name": "壽司／生魚片",
+    "emoji": "🍣",
+    "category": "日式",
+    "tags": [
+      "international",
+      "healthy"
+    ],
+    "spice": "none",
+    "flavor": "light",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "rice",
+    "temp": "cold"
+  },
+  {
+    "id": "main-japanese-set",
+    "name": "日式定食",
+    "emoji": "🍱",
+    "category": "日式",
+    "tags": [
+      "international"
+    ],
+    "spice": "none",
+    "flavor": "light",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "rice",
+    "temp": "hot"
+  },
+  {
+    "id": "main-korean",
+    "name": "韓式料理",
+    "emoji": "🇰🇷",
+    "category": "異國",
+    "tags": [
+      "international",
+      "meat"
+    ],
+    "spice": "mild",
+    "flavor": "rich",
+    "meal": "feast",
+    "price": "mid",
+    "carb": "rice",
+    "temp": "hot"
+  },
+  {
+    "id": "main-thai",
+    "name": "泰式料理",
+    "emoji": "🌶️",
+    "category": "異國",
+    "tags": [
+      "international"
+    ],
+    "spice": "mild",
+    "flavor": "rich",
+    "meal": "feast",
+    "price": "mid",
+    "carb": "rice",
+    "temp": "hot"
+  },
+  {
+    "id": "main-vietnamese",
+    "name": "越南料理",
+    "emoji": "🥖",
+    "category": "異國",
+    "tags": [
+      "international",
+      "healthy"
+    ],
+    "spice": "none",
+    "flavor": "light",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "none",
+    "temp": "hot"
+  },
+  {
+    "id": "main-hongkong",
+    "name": "港式飲茶",
+    "emoji": "🥢",
+    "category": "異國",
+    "tags": [
+      "international"
+    ],
+    "spice": "none",
+    "flavor": "rich",
+    "meal": "feast",
+    "price": "mid",
+    "carb": "bread",
+    "temp": "hot"
+  },
+  {
+    "id": "main-indian",
+    "name": "印度料理",
+    "emoji": "🍛",
+    "category": "異國",
+    "tags": [
+      "international"
+    ],
+    "spice": "hot",
+    "flavor": "rich",
+    "meal": "feast",
+    "price": "mid",
+    "carb": "rice",
+    "temp": "hot"
+  },
+  {
+    "id": "main-breakfast",
+    "name": "早餐／早午餐",
+    "emoji": "🍳",
+    "category": "早餐",
+    "tags": [
+      "breakfast"
+    ],
+    "spice": "none",
+    "flavor": "light",
+    "meal": "simple",
+    "price": "low",
+    "carb": "bread",
+    "temp": "hot"
+  },
+  {
+    "id": "main-vegetarian",
+    "name": "素食／蔬食",
+    "emoji": "🌿",
+    "category": "健康",
+    "tags": [
+      "healthy"
+    ],
+    "spice": "none",
+    "flavor": "light",
+    "meal": "simple",
+    "price": "mid",
+    "carb": "none",
+    "temp": "hot"
+  }
+];
