@@ -28,7 +28,37 @@ window.WTE_DISHES = [
   {id:'omelet-rice',name:'蛋包飯',emoji:'🍳',category:'日式',spice:'none',flavor:'light',meal:'simple',price:'mid',carb:'rice',temp:'hot'},
   {id:'duck-rice',name:'鴨肉飯',emoji:'🦆',category:'台式',spice:'none',flavor:'rich',meal:'simple',price:'low',carb:'rice',temp:'hot'},
   {id:'fried-rice',name:'炒飯',emoji:'🍳',category:'中式',spice:'none',flavor:'rich',meal:'simple',price:'low',carb:'rice',temp:'hot'},
-  {id:'udon',name:'烏龍麵',emoji:'🍜',category:'日式',spice:'none',flavor:'light',meal:'simple',price:'mid',carb:'noodle',temp:'hot'}
+  {id:'udon',name:'烏龍麵',emoji:'🍜',category:'日式',spice:'none',flavor:'light',meal:'simple',price:'mid',carb:'noodle',temp:'hot'},
+  {id:'pork-chop-rice',name:'排骨飯',emoji:'🍱',category:'台式',spice:'none',flavor:'rich',meal:'simple',price:'low',carb:'rice',temp:'hot'},
+  {id:'chicken-leg-rice',name:'雞腿飯',emoji:'🍗',category:'台式',spice:'none',flavor:'rich',meal:'simple',price:'mid',carb:'rice',temp:'hot'},
+  {id:'braised-pork-belly-rice',name:'控肉飯',emoji:'🍖',category:'台式',spice:'none',flavor:'rich',meal:'simple',price:'low',carb:'rice',temp:'hot'},
+  {id:'buffet',name:'自助餐',emoji:'🍱',category:'台式',spice:'none',flavor:'light',meal:'simple',price:'mid',carb:'rice',temp:'hot'},
+  {id:'pot-noodles',name:'鍋燒意麵',emoji:'🍜',category:'台式',spice:'none',flavor:'light',meal:'simple',price:'low',carb:'noodle',temp:'hot'},
+  {id:'fried-noodles',name:'炒麵',emoji:'🍝',category:'台式',spice:'none',flavor:'rich',meal:'simple',price:'low',carb:'noodle',temp:'hot'},
+  {id:'potstickers',name:'鍋貼',emoji:'🥟',category:'中式',spice:'none',flavor:'rich',meal:'simple',price:'low',carb:'bread',temp:'hot'},
+  {id:'mini-hotpot',name:'小火鍋',emoji:'🍲',category:'鍋物',spice:'mild',flavor:'rich',meal:'simple',price:'mid',carb:'none',temp:'hot'},
+  {id:'congee',name:'粥',emoji:'🥣',category:'台式',spice:'none',flavor:'light',meal:'simple',price:'low',carb:'rice',temp:'hot'},
+  {id:'plain-noodles',name:'陽春麵',emoji:'🍜',category:'台式',spice:'none',flavor:'light',meal:'simple',price:'low',carb:'noodle',temp:'hot'},
+  {id:'mcdonalds',name:'麥當勞',emoji:'🍔',category:'速食',spice:'none',flavor:'rich',meal:'simple',price:'mid',carb:'bread',temp:'hot'},
+  {id:'kfc',name:'肯德基',emoji:'🍗',category:'速食',spice:'mild',flavor:'rich',meal:'simple',price:'mid',carb:'bread',temp:'hot'},
+  {id:'gratin',name:'焗烤',emoji:'🧀',category:'西式',spice:'none',flavor:'rich',meal:'simple',price:'mid',carb:'rice',temp:'hot'},
+  {id:'sub-sandwich',name:'潛艇堡',emoji:'🥪',category:'西式',spice:'none',flavor:'light',meal:'simple',price:'mid',carb:'bread',temp:'cold'},
+  {id:'oyster-omelet',name:'蚵仔煎',emoji:'🦪',category:'台灣小吃',spice:'none',flavor:'rich',meal:'snack',price:'low',carb:'none',temp:'hot'},
+  {id:'oyster-vermicelli',name:'蚵仔麵線',emoji:'🍜',category:'台灣小吃',spice:'mild',flavor:'rich',meal:'snack',price:'low',carb:'noodle',temp:'hot'},
+  {id:'salt-pepper-chicken',name:'鹽酥雞',emoji:'🍗',category:'台灣小吃',spice:'mild',flavor:'rich',meal:'snack',price:'low',carb:'none',temp:'hot'},
+  {id:'chicken-cutlet',name:'雞排',emoji:'🍗',category:'台灣小吃',spice:'mild',flavor:'rich',meal:'snack',price:'low',carb:'none',temp:'hot'},
+  {id:'luwei',name:'滷味',emoji:'🥢',category:'台灣小吃',spice:'mild',flavor:'rich',meal:'snack',price:'low',carb:'none',temp:'hot'},
+  {id:'stinky-tofu',name:'臭豆腐',emoji:'🧈',category:'台灣小吃',spice:'mild',flavor:'rich',meal:'snack',price:'low',carb:'none',temp:'hot'},
+  {id:'meatball',name:'肉圓',emoji:'🥟',category:'台灣小吃',spice:'none',flavor:'rich',meal:'snack',price:'low',carb:'bread',temp:'hot'},
+  {id:'gua-bao',name:'刈包',emoji:'🥙',category:'台灣小吃',spice:'none',flavor:'rich',meal:'snack',price:'low',carb:'bread',temp:'hot'},
+  {id:'sausage-rice-sausage',name:'大腸包小腸',emoji:'🌭',category:'台灣小吃',spice:'none',flavor:'rich',meal:'snack',price:'low',carb:'rice',temp:'hot'},
+  {id:'tempura-tw',name:'甜不辣',emoji:'🍢',category:'台灣小吃',spice:'none',flavor:'rich',meal:'snack',price:'low',carb:'none',temp:'hot'},
+  {id:'pepper-bun',name:'胡椒餅',emoji:'🥯',category:'台灣小吃',spice:'mild',flavor:'rich',meal:'snack',price:'low',carb:'bread',temp:'hot'},
+  {id:'scallion-pancake',name:'蔥油餅',emoji:'🫓',category:'台灣小吃',spice:'none',flavor:'rich',meal:'snack',price:'low',carb:'bread',temp:'hot'},
+  {id:'grilled-sausage',name:'烤香腸',emoji:'🌭',category:'台灣小吃',spice:'none',flavor:'rich',meal:'snack',price:'low',carb:'none',temp:'hot'},
+  {id:'rice-blood-cake',name:'米血糕',emoji:'🍢',category:'台灣小吃',spice:'mild',flavor:'rich',meal:'snack',price:'low',carb:'rice',temp:'hot'},
+  {id:'fried-sweet-potato-ball',name:'地瓜球',emoji:'🍠',category:'台灣小吃',spice:'none',flavor:'rich',meal:'snack',price:'low',carb:'none',temp:'hot'},
+  {id:'popcorn-chicken',name:'雞米花',emoji:'🍗',category:'速食',spice:'mild',flavor:'rich',meal:'snack',price:'low',carb:'none',temp:'hot'}
 ];
 
 window.WTE_REGRET_LINES = [
@@ -68,12 +98,14 @@ window.WTE_HELL_QUESTIONS = [
 
 window.WTE_TEMPLATES = {
   all:{label:'全部隨機',emoji:'🎲',description:'什麼都不設限，直接讓命運亂入。',ids:null,wheelCount:10},
-  taiwan:{label:'台式日常',emoji:'🍚',description:'熟悉、快速、台味一點。',ids:['beef-noodle','bento','braised-pork-rice','dumplings','chicken-rice','duck-rice','fried-rice','teppanyaki','xiaolongbao','hotpot'],wheelCount:8},
-  noodle:{label:'麵食控',emoji:'🍜',description:'飯先退下，今天讓麵類自己打一架。',ids:['ramen','beef-noodle','pasta','vietnamese','mala','udon','korean','curry'],wheelCount:8},
-  feast:{label:'聚餐大餐',emoji:'🥩',description:'不是隨便填飽，是要認真吃一餐。',ids:['hotpot','bbq','korean','pizza','steak','seafood','thai','tempura','teppanyaki','sushi'],wheelCount:10},
-  budget:{label:'省錢快吃',emoji:'🪙',description:'錢包先活下來，速度跟飽足優先。',ids:['bento','braised-pork-rice','dumplings','chicken-rice','duck-rice','fried-rice','vietnamese','beef-noodle'],wheelCount:8},
-  light:{label:'清爽一點',emoji:'🌿',description:'今天不想太油太重，胃想安靜一點。',ids:['sushi','vietnamese','vegetarian','brunch','xiaolongbao','chicken-rice','udon','seafood'],wheelCount:8},
-  late:{label:'宵夜罪惡局',emoji:'🌙',description:'晚了，但嘴巴完全沒有要下班。',ids:['fried-chicken','mala','dumplings','burger','pizza','ramen','fried-rice','hotpot'],wheelCount:8}
+  taiwan:{label:'台式日常',emoji:'🍚',description:'台灣人平常最常吃的正餐集合。',ids:['beef-noodle','bento','braised-pork-rice','pork-chop-rice','chicken-leg-rice','braised-pork-belly-rice','buffet','pot-noodles','fried-noodles','potstickers','dumplings','chicken-rice','duck-rice','fried-rice','teppanyaki','mini-hotpot','congee','plain-noodles','xiaolongbao','hotpot'],wheelCount:10},
+  western:{label:'西式／速食',emoji:'🍔',description:'麥當勞、肯德基、披薩、義大利麵都來。',ids:['mcdonalds','kfc','pizza','pasta','burger','steak','brunch','gratin','sub-sandwich','fried-chicken'],wheelCount:10},
+  noodle:{label:'麵食控',emoji:'🍜',description:'飯先退下，今天讓各種麵自己打一架。',ids:['ramen','beef-noodle','pasta','vietnamese','mala','udon','pot-noodles','fried-noodles','plain-noodles','oyster-vermicelli'],wheelCount:10},
+  feast:{label:'聚餐大餐',emoji:'🥩',description:'不是隨便填飽，是要認真吃一餐。',ids:['hotpot','bbq','korean','pizza','steak','seafood','thai','tempura','teppanyaki','sushi','mini-hotpot'],wheelCount:10},
+  budget:{label:'省錢快吃',emoji:'🪙',description:'錢包先活下來，速度跟飽足優先。',ids:['bento','braised-pork-rice','pork-chop-rice','chicken-rice','duck-rice','fried-rice','fried-noodles','potstickers','dumplings','plain-noodles','congee','vietnamese'],wheelCount:10},
+  light:{label:'清爽一點',emoji:'🌿',description:'今天不想太油太重，胃想安靜一點。',ids:['sushi','vietnamese','vegetarian','brunch','xiaolongbao','chicken-rice','udon','seafood','congee','sub-sandwich'],wheelCount:8},
+  late:{label:'宵夜罪惡局',emoji:'🌙',description:'晚了，但嘴巴完全沒有要下班。',ids:['fried-chicken','salt-pepper-chicken','chicken-cutlet','luwei','mala','dumplings','potstickers','burger','mcdonalds','kfc','ramen','fried-rice','mini-hotpot','hotpot'],wheelCount:10},
+  snacks:{label:'各式小吃',emoji:'🏮',description:'夜市、路邊攤、台灣味，一次全部端上來。',ids:['oyster-omelet','oyster-vermicelli','salt-pepper-chicken','chicken-cutlet','luwei','stinky-tofu','meatball','gua-bao','sausage-rice-sausage','tempura-tw','pepper-bun','scallion-pancake','grilled-sausage','rice-blood-cake','fried-sweet-potato-ball','potstickers','dumplings'],wheelCount:12}
 };
 
 window.WTE_GOOGLE_PLACES_KEY = window.WTE_GOOGLE_PLACES_KEY || '';
