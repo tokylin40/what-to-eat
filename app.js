@@ -257,6 +257,46 @@
       : MAIN_OPTIONS.filter(d => Array.isArray(d.tags) && d.tags.includes(templateId));
     return {template, pool: pool.length ? pool : MAIN_OPTIONS};
   }
+  function wheelPool(templateId) {
+    const template = TEMPLATES[templateId] || TEMPLATES.all || {label:'隨便都可以'};
+    const detailModes = ['snack','late','dessert'];
+    if (detailModes.includes(templateId)) return templatePool(templateId);
+    if (templateId === 'all') return {template, pool:MAIN_OPTIONS};
+
+    const main = MAIN_OPTIONS.filter(d => Array.isArray(d.tags) && d.tags.includes(templateId));
+    if (main.length >= 6) return {template, pool:main};
+
+    const detail = templatePool(templateId).pool;
+    const merged = [...main];
+    const names = new Set(main.map(d => d.name));
+    detail.forEach(d => {
+      if (!names.has(d.name)) {
+        merged.push(d);
+        names.add(d.name);
+      }
+    });
+    return {template, pool:merged.length ? merged : MAIN_OPTIONS};
+  }
+
+  function wheelLabelHtml(name) {
+    const aliases = {
+      '小籠包／麵點':'麵點',
+      '漢堡／速食':'速食',
+      '烏龍／蕎麥麵':'烏龍／蕎麥',
+      '滷肉飯／雞肉飯':'滷肉／雞肉',
+      '壽司／生魚片':'壽司',
+      '水餃／鍋貼':'水餃／鍋貼',
+      '早餐／早午餐':'早午餐'
+    };
+    const safe = aliases[name] || String(name);
+    if (safe.includes('／')) return safe.replace('／','／<br>');
+    if (safe.length >= 7) {
+      const mid = Math.ceil(safe.length / 2);
+      return safe.slice(0,mid) + '<br>' + safe.slice(mid);
+    }
+    return safe;
+  }
+
   function tournamentMainPool() {
     return MAIN_OPTIONS;
   }
@@ -387,18 +427,24 @@
 
   function startWheel(templateId = 'all') {
     clearAsync();
-    const {template, pool} = gamePool(templateId);
-    const desired = Number(template.wheelCount) || 8;
-    const count = Math.max(6, Math.min(12, Math.min(desired, pool.length)));
-    wheelItems = sample(pool, count);
+    const {template, pool} = wheelPool(templateId);
+    const desired = Math.min(Number(template.wheelCount) || 8, 8);
+    const targetCount = Math.max(1, Math.min(desired, pool.length));
+    wheelItems = sample(pool, targetCount);
+    const count = wheelItems.length;
     const slice = 360 / count;
-    const palette = ['#f6ce62','#4b70d8','#7fc07d','#e65747','#f6b58e','#d980e7','#9da7ed','#8cccec','#fff1a6','#b4efb2','#f3a5a5','#f0d77a'];
+    const palette = ['#f6ce62','#4b70d8','#7fc07d','#e65747','#f6b58e','#d980e7','#9da7ed','#8cccec','#fff1a6','#b4efb2'];
     const stops = wheelItems.map((_,i) => `${palette[i % palette.length]} ${i*slice}deg ${(i+1)*slice}deg`).join(',');
-    const background = `repeating-conic-gradient(from 0deg, rgba(21,21,21,.9) 0 1.2deg, transparent 1.2deg ${slice}deg), conic-gradient(from 0deg, ${stops})`;
+    const background = `repeating-conic-gradient(from 0deg, rgba(21,21,21,.9) 0 1.05deg, transparent 1.05deg ${slice}deg), conic-gradient(from 0deg, ${stops})`;
+    const radiusPct = count >= 10 ? 34 : count >= 8 ? 35 : 36;
     const labels = wheelItems.map((d, i) => {
       const angle = i * slice + slice / 2;
-      const flip = angle > 90 && angle < 270 ? 180 : 0;
-      return `<span class="wheel-label" data-wheel-index="${i}" style="transform:translate(-50%,-50%) rotate(${angle}deg) translateY(-122px)"><span class="wheel-label-inner" style="transform:rotate(${flip}deg)"><i>${d.emoji}</i><b>${d.name}</b></span></span>`;
+      const rad = angle * Math.PI / 180;
+      const left = 50 + Math.sin(rad) * radiusPct;
+      const top = 50 - Math.cos(rad) * radiusPct;
+      let textRotation = angle;
+      if (angle > 90 && angle < 270) textRotation += 180;
+      return `<span class="wheel-label wheel-count-${count}" data-wheel-index="${i}" data-dish-id="${d.id}" style="left:${left.toFixed(3)}%;top:${top.toFixed(3)}%;transform:translate(-50%,-50%) rotate(${textRotation}deg)"><span class="wheel-label-inner"><i>${d.emoji}</i><b>${wheelLabelHtml(d.name)}</b></span></span>`;
     }).join('');
     app.innerHTML = `<div class="shell">
       ${topbar(true)}
@@ -416,7 +462,6 @@
     document.querySelectorAll('[data-spin]').forEach(btn => btn.addEventListener('click', spinWheel));
     document.querySelector('#changeWheelTemplate').addEventListener('click', () => renderTemplatePicker('wheel'));
   }
-
   function ratingWeight(dish) {
     const ds = dishStat(dish.id);
     const r = ds.ratings;
