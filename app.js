@@ -630,6 +630,33 @@
     return best && best.score > 0 ? best.dish : null;
   }
 
+  function preferenceRanking(limit = 10) {
+    const PRIOR_MEAN = 2.7;
+    const PRIOR_WEIGHT = 4;
+    return DISHES.map(dish => {
+      const ds = dishStat(dish.id);
+      const r = ds.ratings;
+      const votes = r.love + r.ok + r.meh + r.no;
+      if (votes <= 0) return null;
+      const points = r.love * 5 + r.ok * 3.5 + r.meh * 2 + r.no * 0;
+      const bayes = (points + PRIOR_MEAN * PRIOR_WEIGHT) / (votes + PRIOR_WEIGHT);
+      const loveRate = r.love / votes;
+      const noRate = r.no / votes;
+      const eliminationPenalty = Math.min(0.45, ds.eliminated * 0.035);
+      const score = Math.max(0, Math.min(5, bayes + loveRate * 0.35 - noRate * 0.35 - eliminationPenalty));
+      return {dish, score, votes, selected:ds.selected, eliminated:ds.eliminated, ratings:r};
+    }).filter(Boolean)
+      .sort((a,b) => b.score - a.score || b.votes - a.votes || b.ratings.love - a.ratings.love || a.eliminated - b.eliminated)
+      .slice(0, limit);
+  }
+
+  function rankingConfidence(votes) {
+    if (votes >= 8) return '很懂你';
+    if (votes >= 4) return '逐漸穩定';
+    if (votes >= 2) return '開始有感';
+    return '資料還少';
+  }
+
   function mostEliminated() {
     let best = null;
     DISHES.forEach(d => {
@@ -659,6 +686,7 @@
     const fav = favoriteDish();
     const eliminated = mostEliminated();
     const empty = stats.plays === 0 && !eliminated;
+    const ranking = preferenceRanking(10);
     app.innerHTML = `<div class="shell">
       ${topbar(true)}
       <section class="panel">
@@ -672,6 +700,20 @@
             <div class="stat"><div class="stat-value">${eliminated ? eliminated.dish.emoji + ' ' + eliminated.dish.name : '—'}</div><div class="stat-label">最常淘汰</div></div>
           </div>
           <div class="roast">${stomachRoast(fav, eliminated)}</div>
+          <section class="preference-section">
+            <div class="preference-head">
+              <div><b>🏆 我的喜好排行榜</b><small>玩越多次，排名會越準。</small></div>
+              <span>TOP 10</span>
+            </div>
+            ${ranking.length ? `<div class="preference-list">
+              ${ranking.map((item, index) => `<div class="preference-row ${index < 3 ? `top-${index+1}` : ``}">
+                <div class="rank-num">${index + 1}</div>
+                <div class="rank-food"><span class="rank-emoji">${item.dish.emoji}</span><span><b>${item.dish.name}</b><small>${rankingConfidence(item.votes)} · 評價 ${item.votes} 次</small></span></div>
+                <div class="rank-score"><b>${item.score.toFixed(1)}</b><small>/ 5</small></div>
+                <div class="rank-detail">❤️ ${item.ratings.love}　🙂 ${item.ratings.ok}　😐 ${item.ratings.meh}　💀 ${item.ratings.no}<br><span>淘汰 ${item.eliminated} 次</span></div>
+              </div>`).join(``)}
+            </div>` : `<div class="preference-empty">先替幾道料理評分，排行榜才有東西可以吵架。</div>`}
+          </section>
           <div class="actions"><button class="primary" id="playNow">再玩一局</button></div>`}
       </section>
     </div>`;
