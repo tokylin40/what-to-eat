@@ -88,7 +88,7 @@
     return audioCtx;
   }
 
-  function playTone(freq = 440, duration = .06, type = 'square', volume = .03, delay = 0) {
+  function playTone(freq = 440, duration = .06, type = 'square', volume = .055, delay = 0) {
     const ctx = ensureAudioContext();
     if (!ctx) return;
     const osc = ctx.createOscillator();
@@ -106,23 +106,23 @@
   }
 
   function playClickSound() {
-    playTone(520,.045,'square',.018);
+    playTone(520,.05,'square',.038);
   }
 
   function playLoseSound() {
-    playTone(230,.08,'sawtooth',.025);
-    playTone(165,.1,'sawtooth',.02,.07);
+    playTone(230,.09,'sawtooth',.052);
+    playTone(165,.11,'sawtooth',.042,.07);
   }
 
   function playWinSound() {
-    playTone(523,.1,'sine',.032);
-    playTone(659,.12,'sine',.034,.1);
-    playTone(784,.18,'sine',.038,.21);
+    playTone(523,.11,'sine',.065);
+    playTone(659,.13,'sine',.070,.1);
+    playTone(784,.19,'sine',.078,.21);
   }
 
   function playSpinTicks() {
     [0,.08,.16,.24,.33,.43,.54,.66,.79,.93,1.08,1.24,1.41,1.58].forEach((time,i) => {
-      playTone(360 + i*18,.025,'square',.016,time);
+      playTone(360 + i*18,.03,'square',.034,time);
     });
   }
 
@@ -135,7 +135,7 @@
       btn.setAttribute('aria-label', soundEnabled ? '關閉音效' : '開啟音效');
     }
     if (soundEnabled) {
-      playTone(660,.06,'sine',.03);
+      playTone(660,.07,'sine',.060);
       showToast('音效已開啟');
     } else {
       showToast('已靜音');
@@ -886,7 +886,7 @@
     later(() => {
       const hit = document.querySelector(`[data-wheel-index="${idx}"] .wheel-label-inner`);
       if (hit) hit.classList.add('wheel-hit');
-      playTone(880, .1, 'sine', .04);
+      playTone(880, .11, 'sine', .080);
     }, 1550);
 
     later(() => {
@@ -934,7 +934,7 @@
       </section>
     </div>`;
     attachBack(renderHome);
-    playTone(760,.035,'sine',.014);
+    playTone(760,.045,'sine',.032);
     let remaining = 3000;
     const bar = document.querySelector('#timerBar');
     const timer = every(() => {
@@ -952,8 +952,8 @@
   }
 
   function answerHell(option, auto) {
-    if (auto) playTone(170,.12,'sawtooth',.026);
-    else playTone(690,.055,'sine',.024);
+    if (auto) playTone(170,.13,'sawtooth',.055);
+    else playTone(690,.065,'sine',.050);
     document.querySelectorAll('[data-option]').forEach(b => b.disabled = true);
     hell.answers.push(option.prefs || {});
     if (auto) showToast('猶豫超時，地獄替你按了。');
