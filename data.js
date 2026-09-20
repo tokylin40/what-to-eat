@@ -977,3 +977,62 @@ window.WTE_DETAIL_MAP = {
     "健康輕食"
   ]
 };
+
+
+window.WTE_WHEEL_GROUPS = {
+  hotpot: [
+    {id:'group-hotpot-shabu',name:'涮涮鍋',emoji:'🍲',category:'鍋類',tags:['hotpot'],spice:'none',flavor:'light',meal:'feast',price:'mid',carb:'none',temp:'hot'},
+    {id:'group-hotpot-personal',name:'個人小火鍋',emoji:'🥘',category:'鍋類',tags:['hotpot'],spice:'none',flavor:'rich',meal:'simple',price:'mid',carb:'none',temp:'hot'},
+    {id:'group-hotpot-spicy',name:'麻辣系',emoji:'🌶️',category:'鍋類',tags:['hotpot'],spice:'hot',flavor:'rich',meal:'feast',price:'mid',carb:'none',temp:'hot'},
+    {id:'group-hotpot-tonic',name:'補湯鍋',emoji:'🦆',category:'鍋類',tags:['hotpot'],spice:'none',flavor:'rich',meal:'feast',price:'mid',carb:'none',temp:'hot'},
+    {id:'group-hotpot-special',name:'特色鍋',emoji:'🥬',category:'鍋類',tags:['hotpot'],spice:'mild',flavor:'rich',meal:'feast',price:'mid',carb:'none',temp:'hot'},
+    {id:'group-hotpot-sukiyaki',name:'壽喜燒',emoji:'🥩',category:'鍋類',tags:['hotpot'],spice:'none',flavor:'rich',meal:'feast',price:'high',carb:'none',temp:'hot'}
+  ],
+  fastfood: [
+    {id:'group-fast-burger',name:'漢堡速食',emoji:'🍔',category:'速食',tags:['fastfood'],spice:'none',flavor:'rich',meal:'simple',price:'mid',carb:'bread',temp:'hot'},
+    {id:'group-fast-chicken',name:'炸雞速食',emoji:'🍗',category:'速食',tags:['fastfood'],spice:'mild',flavor:'rich',meal:'simple',price:'mid',carb:'none',temp:'hot'},
+    {id:'group-fast-pizza',name:'披薩',emoji:'🍕',category:'速食',tags:['fastfood'],spice:'none',flavor:'rich',meal:'simple',price:'mid',carb:'bread',temp:'hot'},
+    {id:'group-fast-light',name:'潛艇堡／輕食',emoji:'🥪',category:'速食',tags:['fastfood'],spice:'none',flavor:'light',meal:'simple',price:'mid',carb:'bread',temp:'cold'},
+    {id:'group-fast-fried',name:'炸物小食',emoji:'🍟',category:'速食',tags:['fastfood'],spice:'mild',flavor:'rich',meal:'snack',price:'low',carb:'none',temp:'hot'}
+  ],
+  breakfast: [
+    {id:'group-breakfast-egg',name:'蛋餅／蘿蔔糕',emoji:'🍳',category:'早餐',tags:['breakfast'],spice:'none',flavor:'rich',meal:'simple',price:'low',carb:'bread',temp:'hot'},
+    {id:'group-breakfast-rice',name:'飯糰／燒餅',emoji:'🍙',category:'早餐',tags:['breakfast'],spice:'none',flavor:'rich',meal:'simple',price:'low',carb:'rice',temp:'hot'},
+    {id:'group-breakfast-toast',name:'吐司／三明治',emoji:'🍞',category:'早餐',tags:['breakfast'],spice:'none',flavor:'light',meal:'simple',price:'low',carb:'bread',temp:'hot'},
+    {id:'group-breakfast-noodle',name:'鐵板麵',emoji:'🍝',category:'早餐',tags:['breakfast'],spice:'none',flavor:'rich',meal:'simple',price:'low',carb:'noodle',temp:'hot'},
+    {id:'group-breakfast-dimsum',name:'麵點／豆漿',emoji:'🥟',category:'早餐',tags:['breakfast'],spice:'none',flavor:'rich',meal:'simple',price:'low',carb:'bread',temp:'hot'},
+    {id:'group-breakfast-brunch',name:'西式早午餐',emoji:'🥐',category:'早餐',tags:['breakfast'],spice:'none',flavor:'light',meal:'simple',price:'mid',carb:'bread',temp:'hot'}
+  ],
+  healthy: [
+    {id:'group-healthy-box',name:'健康餐盒',emoji:'🥗',category:'健康',tags:['healthy'],spice:'none',flavor:'light',meal:'simple',price:'mid',carb:'rice',temp:'hot'},
+    {id:'group-healthy-salad',name:'沙拉／輕食',emoji:'🥬',category:'健康',tags:['healthy'],spice:'none',flavor:'light',meal:'simple',price:'mid',carb:'none',temp:'cold'},
+    {id:'group-healthy-veg',name:'素食／蔬食',emoji:'🌿',category:'健康',tags:['healthy'],spice:'none',flavor:'light',meal:'simple',price:'mid',carb:'none',temp:'hot'},
+    {id:'group-healthy-jp',name:'清爽日式',emoji:'🍣',category:'健康',tags:['healthy'],spice:'none',flavor:'light',meal:'simple',price:'mid',carb:'rice',temp:'cold'},
+    {id:'group-healthy-vn',name:'越式清爽',emoji:'🥢',category:'健康',tags:['healthy'],spice:'none',flavor:'light',meal:'simple',price:'mid',carb:'noodle',temp:'hot'}
+  ]
+};
+
+Object.assign(window.WTE_DETAIL_MAP, {
+  'group-hotpot-shabu':['涮涮鍋','石頭火鍋'],
+  'group-hotpot-personal':['臭臭鍋','牛奶鍋','小火鍋'],
+  'group-hotpot-spicy':['麻辣鍋','麻辣燙','部隊鍋','泡菜鍋'],
+  'group-hotpot-tonic':['薑母鴨','羊肉爐','燒酒雞'],
+  'group-hotpot-special':['酸菜白肉鍋','石頭火鍋','牛奶鍋'],
+  'group-hotpot-sukiyaki':['壽喜燒'],
+  'group-fast-burger':['麥當勞','摩斯漢堡','漢堡王','漢堡'],
+  'group-fast-chicken':['肯德基','頂呱呱','炸雞','雞米花'],
+  'group-fast-pizza':['拿坡里披薩','必勝客','達美樂','披薩'],
+  'group-fast-light':['潛艇堡','三明治','貝果'],
+  'group-fast-fried':['雞排','雞米花','炸雞'],
+  'group-breakfast-egg':['蛋餅','蘿蔔糕','蔥抓餅'],
+  'group-breakfast-rice':['飯糰','燒餅油條','饅頭'],
+  'group-breakfast-toast':['吐司','三明治','貝果','可頌'],
+  'group-breakfast-noodle':['鐵板麵'],
+  'group-breakfast-dimsum':['鍋貼','水煎包','小籠包','豆漿'],
+  'group-breakfast-brunch':['早午餐','西式早午餐','可頌','貝果'],
+  'group-healthy-box':['健康餐盒','素食便當','健康輕食'],
+  'group-healthy-salad':['沙拉','健康輕食','潛艇堡'],
+  'group-healthy-veg':['蔬食','蛋奶素','全素','蔬食漢堡'],
+  'group-healthy-jp':['壽司','生魚片','定食'],
+  'group-healthy-vn':['越南料理','越南河粉','越南法國麵包']
+});

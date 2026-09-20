@@ -7,6 +7,7 @@
   const TEMPLATES = window.WTE_TEMPLATES || {};
   const MAIN_OPTIONS = window.WTE_MAIN_OPTIONS || [];
   const DETAIL_MAP = window.WTE_DETAIL_MAP || {};
+  const WHEEL_GROUPS = window.WTE_WHEEL_GROUPS || {};
   const STORAGE_KEY = 'what-to-eat-v01';
   const CUSTOM_WHEELS_KEY = 'what-to-eat-custom-wheels-v1';
   const SOUND_KEY = 'what-to-eat-sound-v1';
@@ -143,7 +144,18 @@
 
   document.addEventListener('click', e => {
     const soundBtn = e.target.closest('#soundBtn');
-    if (soundBtn) toggleSound();
+    if (soundBtn) {
+      toggleSound();
+      return;
+    }
+
+    const interactive = e.target.closest('button, a');
+    if (!interactive || !soundEnabled) return;
+
+    const special = interactive.closest(
+      '[data-spin], .food-card, [data-final-select], [data-mini], .lottery-item'
+    );
+    if (!special) playClickSound();
   });
 
   function celebrate() {
@@ -389,6 +401,11 @@
     const detailModes = ['snack','late','dessert'];
     if (detailModes.includes(templateId)) return templatePool(templateId);
     if (templateId === 'all') return {template, pool:MAIN_OPTIONS};
+
+    const grouped = WHEEL_GROUPS[templateId];
+    if (Array.isArray(grouped) && grouped.length >= 2) {
+      return {template, pool:grouped};
+    }
 
     const main = MAIN_OPTIONS.filter(d => Array.isArray(d.tags) && d.tags.includes(templateId));
     return {template, pool:main.length ? main : MAIN_OPTIONS};
@@ -719,16 +736,33 @@
       if (angle > 90 && angle < 270) textRotation += 180;
       return `<span class="wheel-label wheel-count-${count}" data-wheel-index="${i}" data-dish-id="${d.id}" style="left:${left.toFixed(3)}%;top:${top.toFixed(3)}%;transform:translate(-50%,-50%) rotate(${textRotation}deg)"><span class="wheel-label-inner"><i>${d.emoji || '🎯'}</i><b>${wheelLabelHtml(d.name)}</b></span></span>`;
     }).join('');
+
+    const isDetail = meta.kind === 'detail';
+    const isCustom = meta.kind === 'custom';
+    const isDirect = meta.kind === 'direct';
+    const flowHtml = isCustom
+      ? '<div class="wheel-flow"><span class="active">🎯 自定義輪盤</span><i>·</i><span>自己出的題</span></div>'
+      : isDirect
+        ? '<div class="wheel-flow"><span class="active">🎯 直接抽細項</span><i>·</i><span>抽到就決定</span></div>'
+        : `<div class="wheel-flow"><span class="${isDetail ? 'done' : 'active'}">① 大方向</span><i>→</i><span class="${isDetail ? 'active' : ''}">② 細項（可選）</span></div>`;
+
+    const candidateHtml = `<div class="wheel-candidates">
+      <div class="wheel-candidates-title">本輪候選</div>
+      <div class="wheel-candidate-chips">${wheelItems.map(d => `<span>${d.emoji || '🎯'} ${escapeHtml(d.name)}</span>`).join('')}</div>
+    </div>`;
+
     app.innerHTML = `<div class="shell">
       ${topbar(true)}
       <section class="panel wheel-panel">
-        <div class="progress-row"><span>${meta.title || '命運大輪盤'}</span><span>${count} 選 1</span></div>
-        <div class="question">${meta.question || '不要想。轉就對了。'}</div>
-        <p class="hint">${meta.description || '今天的命運就交給這一圈。'}</p>
+        <div class="progress-row"><span>${escapeHtml(meta.title || '命運大輪盤')}</span><span>${count} 選 1</span></div>
+        <div class="question">${escapeHtml(meta.question || '不要想。轉就對了。')}</div>
+        <p class="hint">${escapeHtml(meta.description || '今天的命運就交給這一圈。')}</p>
+        ${flowHtml}
+        ${candidateHtml}
         <div class="wheel-wrap"><div class="pointer"><span></span></div><div class="wheel" id="wheel" style="background:${background}">${labels}</div><button class="wheel-hub" data-spin>轉！</button></div>
         <button class="primary wheel-spin" data-spin>開始轉 🎡</button>
-        <button class="link-btn wheel-change" id="changeWheelTemplate">${meta.changeLabel || '換一組料理模板'}</button>
-        <div class="wheel-note">${meta.note || '宇宙不負責售後服務。'}</div>
+        <button class="link-btn wheel-change" id="changeWheelTemplate">${escapeHtml(meta.changeLabel || '換一組料理模板')}</button>
+        <div class="wheel-note">${escapeHtml(meta.note || '抽到後可以直接接受；有細項的類別還能再轉一次。')}</div>
       </section>
     </div>`;
     attachBack(meta.backAction || renderHome);
@@ -741,7 +775,7 @@
     const desired = Math.min(Number(template.wheelCount) || 8, 8);
     const items = sample(pool, Math.max(2, Math.min(desired, pool.length)));
     renderWheelBoard(items, {
-      kind:'main',
+      kind:['snack','late','dessert'].includes(templateId) ? 'direct' : 'main',
       templateId,
       title:`命運大輪盤 · ${template.label || '全部隨機'}`,
       description:template.description || '先決定大方向，想更細再繼續轉。',
@@ -900,6 +934,7 @@
       </section>
     </div>`;
     attachBack(renderHome);
+    playTone(760,.035,'sine',.014);
     let remaining = 3000;
     const bar = document.querySelector('#timerBar');
     const timer = every(() => {
@@ -917,6 +952,8 @@
   }
 
   function answerHell(option, auto) {
+    if (auto) playTone(170,.12,'sawtooth',.026);
+    else playTone(690,.055,'sine',.024);
     document.querySelectorAll('[data-option]').forEach(b => b.disabled = true);
     hell.answers.push(option.prefs || {});
     if (auto) showToast('猶豫超時，地獄替你按了。');
