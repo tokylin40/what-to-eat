@@ -206,10 +206,22 @@
 <section class="share-strip" aria-label="分享網站">
   <div class="share-title">分享給還在問「吃什麼？」的人</div>
   <div class="share-row">
-    <a class="share-btn line" id="shareLine" target="_blank" rel="noopener">LINE</a>
-    <button class="share-btn ig" id="shareIg" type="button">IG</button>
-    <a class="share-btn fb" id="shareFb" target="_blank" rel="noopener">FB</a>
-    <a class="share-btn x" id="shareX" target="_blank" rel="noopener">X</a>
+    <a class="share-btn line" id="shareLine" target="_blank" rel="noopener" aria-label="分享到 LINE">
+      <span class="share-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#06C755"/><path fill="#fff" d="M25.6 14.5c0-4.5-4.5-8.1-10-8.1s-10 3.6-10 8.1c0 4 3.6 7.4 8.5 8 .3.1.8.2.9.5.1.3.1.7 0 1l-.2 1.1c-.1.3-.2 1.3 1.2.7 1.4-.6 7.4-4.4 10.1-7.5 1.8-1.9 2.5-3.8 2.5-3.8Zm-14.9 2.6H8.6V12h2.1v3.3h1.9v1.8h-1.9Zm3.1 0h-2.1V12h2.1v5.1Zm5.8 0h-1.8l-2.1-2.8v2.8h-2V12h1.8l2.1 2.8V12h2v5.1Zm4.6-3.4h-2v.7h1.9V16h-1.9v.7h2v1.6h-4.1V12h4.1v1.7Z"/></svg></span>
+      <span>LINE</span>
+    </a>
+    <button class="share-btn ig" id="shareIg" type="button" aria-label="分享到 Instagram">
+      <span class="share-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><defs><linearGradient id="igGradient" x1="4" y1="28" x2="28" y2="4"><stop stop-color="#feda75"/><stop offset=".35" stop-color="#fa7e1e"/><stop offset=".68" stop-color="#d62976"/><stop offset="1" stop-color="#4f5bd5"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#igGradient)"/><rect x="7.5" y="7.5" width="17" height="17" rx="5.4" fill="none" stroke="#fff" stroke-width="2.2"/><circle cx="16" cy="16" r="4.1" fill="none" stroke="#fff" stroke-width="2.2"/><circle cx="22.1" cy="9.9" r="1.5" fill="#fff"/></svg></span>
+      <span>IG</span>
+    </button>
+    <a class="share-btn fb" id="shareFb" target="_blank" rel="noopener" aria-label="分享到 Facebook">
+      <span class="share-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#1877F2"/><path fill="#fff" d="M18.3 27V17.5h3.2l.5-3.7h-3.7v-2.4c0-1.1.3-1.8 1.9-1.8H22V6.3c-.4-.1-1.6-.2-2.9-.2-2.9 0-4.9 1.8-4.9 5.1v2.8H11v3.7h3.2V27h4.1Z"/></svg></span>
+      <span>FB</span>
+    </a>
+    <a class="share-btn x" id="shareX" target="_blank" rel="noopener" aria-label="分享到 X">
+      <span class="share-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#111"/><path fill="#fff" d="M9 8h4.4l3.6 4.8L21.2 8H24l-5.7 6.6L24 24h-4.4l-4-5.3L11 24H8.2l6.1-7L9 8Zm3.1 2 8.5 12h1.3l-8.5-12h-1.3Z"/></svg></span>
+      <span>X</span>
+    </a>
   </div>
 </section>
     </div>`;
