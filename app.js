@@ -152,6 +152,32 @@
     return `<div class="mascot" aria-hidden="true"><span>🍽️</span><i class="mascot-mouth"></i></div>`;
   }
 
+  function sharePageUrl() {
+    return window.location.origin + window.location.pathname;
+  }
+
+  function shareCopy() {
+    return '又不知道吃什麼？來玩「你想吃什麼？」幫你決定今天吃什麼 😏';
+  }
+
+  async function shareToInstagram() {
+    const url = sharePageUrl();
+    if (navigator.share) {
+      try {
+        await navigator.share({title:'你想吃什麼？', text:shareCopy(), url});
+        return;
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+      }
+    }
+    window.open('https://www.instagram.com/', '_blank', 'noopener');
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('連結已複製，可以貼到 IG 分享。');
+    } catch {
+      showToast('已開啟 Instagram，請貼上網站連結分享。');
+    }
+  }
   function renderHome() {
     clearAsync();
     tournament = null;
@@ -177,9 +203,24 @@
         </button>
       </section>
       <div class="home-foot"><button class="link-btn" id="stomachLink">看看我的胃有多難搞 →</button></div>
+<section class="share-strip" aria-label="分享網站">
+  <div class="share-title">分享給還在問「吃什麼？」的人</div>
+  <div class="share-row">
+    <a class="share-btn line" id="shareLine" target="_blank" rel="noopener">LINE</a>
+    <button class="share-btn ig" id="shareIg" type="button">IG</button>
+    <a class="share-btn fb" id="shareFb" target="_blank" rel="noopener">FB</a>
+    <a class="share-btn x" id="shareX" target="_blank" rel="noopener">X</a>
+  </div>
+</section>
     </div>`;
     attachStomach();
     document.querySelector('#stomachLink').addEventListener('click', renderStomach);
+    const shareUrl = sharePageUrl();
+    const shareText = shareCopy();
+    document.querySelector('#shareLine').href = 'https://social-plugins.line.me/lineit/share?url=' + encodeURIComponent(shareUrl);
+    document.querySelector('#shareFb').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl);
+    document.querySelector('#shareX').href = 'https://twitter.com/intent/tweet?url=' + encodeURIComponent(shareUrl) + '&text=' + encodeURIComponent(shareText);
+    document.querySelector('#shareIg').addEventListener('click', shareToInstagram);
     document.querySelectorAll('[data-mode]').forEach(btn => btn.addEventListener('click', () => {
       const mode = btn.dataset.mode;
       if (mode === 'tournament') renderTemplatePicker('tournament');
