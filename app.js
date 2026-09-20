@@ -497,23 +497,80 @@
     }, 260);
   }
 
+  function hellPreferenceScore(dish, prefs) {
+    let score = 0;
+    const matchBonus = {flavor:4.5, spice:3.5, carb:3.5, temp:2.8, price:2.4, meal:2.4};
+    const mismatchPenalty = {flavor:4.8, spice:3.8, carb:3.2, temp:2.8, price:2.0, meal:1.8};
+
+    Object.entries(prefs).forEach(([key, wanted]) => {
+      if (!wanted || wanted === 'any') return;
+      if (dish[key] === wanted) {
+        score += matchBonus[key] || 2.5;
+        return;
+      }
+
+      let penalty = mismatchPenalty[key] || 1.5;
+      if (key === 'flavor' && wanted === 'light' && dish.flavor === 'rich') penalty = 6;
+      if (key === 'spice' && wanted === 'none' && dish.spice === 'hot') penalty = 6;
+      if (key === 'spice' && wanted === 'hot' && dish.spice !== 'hot') penalty = 4.5;
+      if (key === 'price' && wanted === 'low' && dish.price === 'high') penalty = 4;
+      if (key === 'meal' && wanted === 'simple' && dish.meal === 'feast') penalty = 3;
+      score -= penalty;
+    });
+    return score;
+  }
+
+  function hellCandidatePool() {
+    let pool = [...DISHES];
+    const answers = hell.answers || [];
+    const wantsLight = answers.some(p => p.flavor === 'light');
+    const wantedCarb = answers.map(p => p.carb).find(Boolean);
+
+    if (wantsLight) {
+      const lightPool = pool.filter(d =>
+        d.flavor === 'light' ||
+        (Array.isArray(d.tags) && d.tags.includes('healthy'))
+      );
+      if (lightPool.length >= 8) pool = lightPool;
+    }
+
+    if (wantedCarb) {
+      const carbPool = pool.filter(d => d.carb === wantedCarb);
+      if (carbPool.length >= 6) pool = carbPool;
+    }
+
+    return pool;
+  }
+
   function finishHell() {
     clearAsync();
-    const scored = DISHES.map(dish => {
-      let score = Math.random() * .35;
+    const candidates = hellCandidatePool();
+    const scored = candidates.map(dish => {
+      let score = Math.random() * .2;
       hell.answers.forEach(prefs => {
-        Object.entries(prefs).forEach(([k, v]) => {
-          if (dish[k] === v) score += 2.5;
-        });
+        score += hellPreferenceScore(dish, prefs);
       });
+
       const ds = dishStat(dish.id);
-      score += Math.min(.8, ds.ratings.love * .18 + ds.ratings.ok * .08);
-      score -= Math.min(.5, ds.ratings.no * .12);
+      score += Math.min(.7, ds.ratings.love * .16 + ds.ratings.ok * .07);
+      score -= Math.min(.6, ds.ratings.no * .14);
       return {dish, score};
     }).sort((a, b) => b.score - a.score);
-    const top = scored.slice(0, 3);
-    const roll = Math.random();
-    const chosen = roll < .55 ? top[0].dish : roll < .83 ? top[1].dish : top[2].dish;
+
+    const top = scored.slice(0, Math.min(5, scored.length));
+    const pickPool = top.slice(0, Math.min(3, top.length));
+    const weights = [0.58, 0.29, 0.13];
+    let roll = Math.random();
+    let chosen = pickPool[0]?.dish || candidates[0] || DISHES[0];
+
+    for (let i = 0; i < pickPool.length; i += 1) {
+      roll -= weights[i] || 0;
+      if (roll <= 0) {
+        chosen = pickPool[i].dish;
+        break;
+      }
+    }
+
     renderResult(chosen, 'hell', `你自己按的。地獄把答案算成了 ${chosen.name}。現在不要怪我。`);
   }
 
