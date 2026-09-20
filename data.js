@@ -443,7 +443,7 @@ window.WTE_MAIN_OPTIONS = [
     "emoji": "🥟",
     "category": "麵點",
     "tags": [
-      "rice"
+      "breakfast"
     ],
     "spice": "none",
     "flavor": "rich",
@@ -458,7 +458,7 @@ window.WTE_MAIN_OPTIONS = [
     "emoji": "🥟",
     "category": "麵點",
     "tags": [
-      "rice",
+      "breakfast",
       "international"
     ],
     "spice": "none",
