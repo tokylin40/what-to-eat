@@ -243,7 +243,7 @@
 
   function templatePool(templateId) {
     const template = TEMPLATES[templateId] || TEMPLATES.all || {label:'全部隨機', ids:null};
-    const pool = Array.isArray(template.ids) ? template.ids.map(getDish).filter(Boolean) : DISHES;
+    const pool = Array.isArray(template.ids) ? template.ids.map(getDish).filter(Boolean) : Array.isArray(template.tags) ? DISHES.filter(d => Array.isArray(d.tags) && template.tags.some(tag => d.tags.includes(tag))) : DISHES;
     return {template, pool: pool.length ? pool : DISHES};
   }
 
@@ -251,12 +251,12 @@
     clearAsync();
     const entries = Object.entries(TEMPLATES);
     const title = mode === 'tournament' ? '三問淘汰賽' : '命運大輪盤';
-    const copy = mode === 'tournament' ? '先縮小今天的範圍，再開始三組獨立對決。' : '先決定今天是哪一種局，再交給命運。';
+    const copy = mode === 'tournament' ? '先選現在最想吃的大方向，再開始三組獨立對決。' : '先選現在想吃的方向，再把最後決定交給命運。';
     app.innerHTML = `<div class="shell">
       ${topbar(true)}
       <section class="panel">
         <div class="progress-row"><span>${title}</span><span>先選一種局</span></div>
-        <div class="question">今天想從哪一類開始？</div>
+        <div class="question">現在想吃哪一種？</div>
         <p class="hint">${copy}</p>
         <div class="template-grid">
           ${entries.map(([id,t]) => `<button class="template-card" data-template="${id}"><span class="template-emoji">${t.emoji || '🍽️'}</span><span><b>${t.label}</b><small>${t.description || ''}</small></span></button>`).join('')}

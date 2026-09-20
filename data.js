@@ -109,3 +109,93 @@ window.WTE_TEMPLATES = {
 };
 
 window.WTE_GOOGLE_PLACES_KEY = window.WTE_GOOGLE_PLACES_KEY || '';
+
+
+
+/* WTE_RICH_FOOD_DATABASE_V04 */
+const WTE_V04_GROUPS=[{"category":"便當／飯類","tags":["rice"],"emoji":"🍚","names":["排骨飯","雞腿飯","控肉飯","滷肉飯","雞肉飯","燒肉飯","鴨肉飯","油飯","炒飯","燴飯","咖哩飯","海南雞飯","便當","自助餐","健康餐盒","鐵路便當"]},{"category":"麵類","tags":["noodle"],"emoji":"🍜","names":["牛肉麵","陽春麵","乾麵","麻醬麵","榨菜肉絲麵","餛飩麵","擔仔麵","鍋燒意麵","切仔麵","肉羹麵","炒麵","炒米粉","米苔目","粄條","米粉湯"]},{"category":"台灣小吃","tags":["snack"],"emoji":"🏮","names":["蚵仔煎","蚵仔麵線","大腸麵線","肉圓","碗粿","米糕","肉粽","筒仔米糕","臭豆腐","甜不辣","刈包","潤餅","胡椒餅","蔥油餅","蘿蔔糕","鹹酥雞","雞排"]},{"category":"湯類／羹類","tags":["healthy"],"emoji":"🥣","names":["肉羹","魷魚羹","花枝羹","魚酥羹","四神湯","貢丸湯","魚丸湯","豬血湯","蛤蜊湯","排骨酥湯"]},{"category":"鍋類","tags":["hotpot"],"emoji":"🍲","names":["火鍋","涮涮鍋","麻辣鍋","石頭火鍋","酸菜白肉鍋","薑母鴨","羊肉爐","燒酒雞","臭臭鍋","牛奶鍋","壽喜燒"]},{"category":"燒烤／熱炒","tags":["meat"],"emoji":"🔥","names":["台式熱炒","居酒屋","串燒","燒肉","烤肉","烤雞","烤鴨","海鮮快炒","啤酒屋料理"]},{"category":"早餐／早午餐","tags":["breakfast"],"emoji":"🍳","names":["蛋餅","蘿蔔糕","飯糰","燒餅油條","鐵板麵","漢堡","吐司","三明治","饅頭","蔥抓餅","鍋貼","水煎包","小籠包","豆漿"]},{"category":"麵包／輕食","tags":["breakfast","healthy"],"emoji":"🥪","names":["貝果","可頌","麵包","沙拉","潛艇堡","三明治","捲餅","健康輕食"]},{"category":"水餃／麵點","tags":["snack","breakfast"],"emoji":"🥟","names":["水餃","蒸餃","鍋貼","小籠包","生煎包","餛飩","蔥油餅","牛肉捲餅","包子"]},{"category":"西式","tags":["international"],"emoji":"🍔","names":["漢堡","炸雞","披薩","義大利麵","燉飯","牛排","焗烤","美式餐廳","西式早午餐","墨西哥捲餅"]},{"category":"日式","tags":["international"],"emoji":"🍣","names":["壽司","生魚片","拉麵","烏龍麵","蕎麥麵","丼飯","咖哩飯","豬排","日式炸物","燒肉","居酒屋","定食"]},{"category":"韓式","tags":["international"],"emoji":"🇰🇷","names":["韓式烤肉","韓式炸雞","部隊鍋","豆腐鍋","泡菜鍋","石鍋拌飯","韓式拌飯","辣炒年糕","冷麵"]},{"category":"東南亞","tags":["international"],"emoji":"🌶️","names":["越南河粉","越南法國麵包","泰式料理","打拋豬","綠咖哩","椒麻雞","海南雞飯","新加坡料理","馬來西亞料理","印度料理"]},{"category":"港澳／中式","tags":["international"],"emoji":"🥢","names":["港式飲茶","燒臘","叉燒飯","廣東粥","港式點心","煲仔飯","四川菜","湖南菜","上海菜","北京菜"]},{"category":"素食","tags":["healthy"],"emoji":"🌿","names":["素食便當","蔬食","蛋奶素","全素","素火鍋","素麵","蔬食漢堡"]},{"category":"消夜","tags":["late"],"emoji":"🌙","names":["鹹酥雞","雞排","滷味","串燒","燒烤","臭豆腐","蚵仔煎","蚵仔麵線","泡麵","炒泡麵","鍋燒麵","豆漿店","粥","關東煮"]},{"category":"甜點／點心","tags":["dessert"],"emoji":"🍰","names":["豆花","仙草","剉冰","紅豆湯","燒仙草","車輪餅","雞蛋糕","地瓜球","麻糬","鬆餅","蛋糕","泡芙","甜甜圈"]},{"category":"飲料／咖啡","tags":["dessert"],"emoji":"🧋","names":["珍珠奶茶","手搖飲","茶飲","果汁","咖啡","鮮奶茶","冬瓜茶","青草茶"]}];
+const WTE_V04_EXTRA_TOP_TAGS={"fastfood":["麥當勞","肯德基","摩斯漢堡","漢堡王","頂呱呱","拿坡里披薩","必勝客","達美樂","漢堡","炸雞","披薩","潛艇堡","雞米花"],"meat":["燒肉","烤肉","烤雞","烤鴨","串燒","牛排","豬排","雞排","炸雞","韓式烤肉","韓式炸雞","椒麻雞","燒臘","烤香腸","鹽水雞","海鮮","鐵板燒"],"late":["鹹酥雞","雞排","滷味","串燒","燒烤","臭豆腐","蚵仔煎","蚵仔麵線","泡麵","炒泡麵","鍋燒麵","豆漿店","粥","關東煮","鹽水雞","大腸包小腸","烤香腸","甜不辣","米血糕","炸魷魚","小火鍋","麻辣燙","燒酒雞"]};
+const WTE_V04_TEMPLATES=[["rice","飯","🍚","今天就想吃一碗飯，便當、丼飯、燴飯都可以。",12],["noodle","麵","🍜","湯麵、乾麵、炒麵、米粉通通來。",12],["hotpot","鍋","🍲","火鍋、麻辣鍋、薑母鴨，熱熱吃。",12],["meat","肉","🥩","燒肉、牛排、炸雞、烤肉，肉先決。",12],["fastfood","速食","🍔","麥當勞、肯德基、披薩、漢堡這一局。",10],["snack","小吃","🏮","蚵仔煎、肉圓、麵線、臭豆腐、鹹酥雞。",12],["international","異國料理","🌏","日韓、泰越、港式、西式一次選。",12],["breakfast","早餐","🍳","蛋餅、飯糰、吐司、鐵板麵、早午餐。",10],["late","消夜","🌙","深夜最罪惡的那一區，別假裝不餓。",12],["healthy","健康","🌿","清爽、蔬食、低醣、健康餐盒。",10],["dessert","甜食","🍰","甜點、冰品、豆花，還有飲料咖啡。",12],["all","隨便都可以","🎲","真的都可以？那就全部一起來。",12]];
+(function(){
+  const base = Array.isArray(window.WTE_DISHES) ? window.WTE_DISHES : [];
+  const byName = new Map(base.map(d => [d.name, {...d, tags:Array.isArray(d.tags)?d.tags:[]}]));
+  let seq = 1;
+
+  function inferCarb(name, tags) {
+    if (/飯|粥|米糕|油飯|飯糰|米血|煲仔/.test(name)) return 'rice';
+    if (/麵|粉|粄條|米苔目|拉麵|烏龍|蕎麥|河粉/.test(name)) return 'noodle';
+    if (/餅|包|堡|吐司|三明治|可頌|麵包|披薩|饅頭|燒餅|捲餅|貝果/.test(name)) return 'bread';
+    if (tags.includes('rice')) return 'rice';
+    if (tags.includes('noodle')) return 'noodle';
+    return 'none';
+  }
+  function inferSpice(name) {
+    if (/麻辣|酸辣|四川|湖南|辣炒|椒麻/.test(name)) return 'hot';
+    if (/咖哩|泡菜|綠咖哩|胡椒/.test(name)) return 'mild';
+    return 'none';
+  }
+  function inferTemp(name) {
+    if (/生魚片|沙拉|冷麵|冰|剉冰|愛玉|奶酪|布丁|果汁|鮮奶茶|手搖|茶飲/.test(name)) return 'cold';
+    return 'hot';
+  }
+  function inferMeal(tags) {
+    if (tags.includes('dessert') || tags.includes('snack')) return 'snack';
+    if (tags.includes('hotpot') || tags.includes('meat')) return 'feast';
+    return 'simple';
+  }
+  function inferPrice(tags, name) {
+    if (/牛排|燒肉|烤肉|海鮮|火鍋|居酒屋/.test(name)) return 'high';
+    if (tags.includes('snack') || tags.includes('breakfast') || tags.includes('noodle')) return 'low';
+    return 'mid';
+  }
+  function safeId(name) {
+    return 'food-v04-' + String(seq++).padStart(3,'0');
+  }
+
+  WTE_V04_GROUPS.forEach(group => {
+    group.names.forEach(name => {
+      const existing = byName.get(name);
+      if (existing) {
+        const tags = new Set([...(existing.tags||[]), ...group.tags]);
+        existing.tags = [...tags];
+        if (!existing.category || existing.category === '中式' || existing.category === '台式') existing.category = group.category;
+        byName.set(name, existing);
+      } else {
+        const tags=[...new Set(group.tags)];
+        byName.set(name,{
+          id:safeId(name), name, emoji:group.emoji, category:group.category, tags,
+          spice:inferSpice(name),
+          flavor:tags.includes('healthy') ? 'light' : 'rich',
+          meal:inferMeal(tags),
+          price:inferPrice(tags,name),
+          carb:inferCarb(name,tags),
+          temp:inferTemp(name)
+        });
+      }
+    });
+  });
+
+  Object.entries(WTE_V04_EXTRA_TOP_TAGS).forEach(([tag,names]) => {
+    names.forEach(name => {
+      let item = byName.get(name);
+      if (!item && tag === 'fastfood') {
+        item = {
+          id:safeId(name), name, emoji:'🍔', category:'西式／速食', tags:['fastfood'],
+          spice:'none', flavor:'rich', meal:'simple', price:'mid', carb:'bread', temp:'hot'
+        };
+      }
+      if (!item) return;
+      item.tags = [...new Set([...(item.tags||[]), tag])];
+      byName.set(name,item);
+    });
+  });
+
+  window.WTE_DISHES=[...byName.values()];
+  window.WTE_TEMPLATES={};
+  WTE_V04_TEMPLATES.forEach(([id,label,emoji,description,wheelCount])=>{
+    window.WTE_TEMPLATES[id]={
+      label,emoji,description,wheelCount,
+      tags:id==='all'?null:[id]
+    };
+  });
+})();
