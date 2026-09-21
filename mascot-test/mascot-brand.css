@@ -133,3 +133,89 @@
     margin-top:6px;
   }
 }
+
+/* Brand readability v2 */
+.pengu-stage{
+  min-height:120px;
+  grid-template-columns:94px minmax(0,1fr);
+  gap:16px;
+  padding:13px 15px;
+}
+.pengu-rig{
+  width:94px;
+  height:94px;
+}
+.pengu-avatar{
+  width:86px;
+  height:86px;
+}
+.pengu-bubble b{
+  font-size:20px;
+  line-height:1.24;
+  margin-bottom:8px;
+}
+.pengu-bubble span{
+  font-size:15px;
+  line-height:1.48;
+}
+
+.template-card b{
+  font-size:18px;
+  line-height:1.22;
+}
+.template-card small{
+  font-size:14px;
+  line-height:1.42;
+}
+
+@media(max-width:390px){
+  .pengu-stage{
+    min-height:112px;
+    grid-template-columns:86px minmax(0,1fr);
+    gap:12px;
+    padding:12px;
+  }
+  .pengu-rig{
+    width:86px;
+    height:86px;
+  }
+  .pengu-avatar{
+    width:82px;
+    height:82px;
+  }
+  .pengu-bubble b{
+    font-size:18px;
+    line-height:1.25;
+    margin-bottom:7px;
+  }
+  .pengu-bubble span{
+    font-size:14px;
+    line-height:1.45;
+  }
+  .template-card{
+    grid-template-columns:36px minmax(0,1fr);
+    gap:9px;
+    min-height:72px;
+    padding:11px;
+  }
+  .template-card b{
+    font-size:17px;
+    line-height:1.2;
+  }
+  .template-card small{
+    display:block;
+    font-size:14px;
+    line-height:1.38;
+    margin-top:5px;
+  }
+  .template-card.template-featured{
+    min-height:100px;
+  }
+  .template-card.template-featured b{
+    font-size:19px;
+  }
+  .template-card.template-featured small{
+    font-size:14px;
+    line-height:1.38;
+  }
+}
