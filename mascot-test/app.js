@@ -329,7 +329,6 @@
         ${mascot()}
         <span class="kicker">今天不要再說都可以</span>
         <h1>又不知道吃什麼？<br>我就知道 😏</h1>
-        <p class="subtitle">不要再問「都可以」了。你只要負責按，我負責把晚餐推到你面前。</p>
       </section>
       <section class="mode-grid" aria-label="選擇玩法">
         <button class="mode-card red" data-mode="tournament">
