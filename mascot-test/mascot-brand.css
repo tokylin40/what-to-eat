@@ -3,12 +3,12 @@
 
 .pengu-stage{
   --surface:#fff8dc;
-  min-height:94px;
+  min-height:108px;
   margin:9px 0 13px;
   padding:10px 12px;
   display:grid;
-  grid-template-columns:60px minmax(0,1fr);
-  gap:12px;
+  grid-template-columns:78px minmax(0,1fr);
+  gap:14px;
   align-items:center;
   border:1.5px solid #151515;
   border-radius:18px;
@@ -24,16 +24,16 @@
 .pengu-stage.pengu-stomach{--surface:#f1e8fb}
 
 .pengu-rig{
-  width:60px;
-  height:60px;
+  width:78px;
+  height:78px;
   display:grid;
   place-items:end center;
   align-self:center;
 }
 .pengu-avatar{
   display:block;
-  width:54px;
-  height:54px;
+  width:72px;
+  height:72px;
   object-fit:contain;
   object-position:center bottom;
   image-rendering:-webkit-optimize-contrast;
@@ -51,7 +51,7 @@
 .pengu-bubble b{
   display:block;
   color:#151515;
-  font-size:14px;
+  font-size:16px;
   font-weight:1000;
   line-height:1.28;
   margin:0 0 6px;
@@ -61,7 +61,7 @@
 .pengu-bubble span{
   display:block;
   color:#615d55;
-  font-size:11.5px;
+  font-size:12.5px;
   font-weight:800;
   line-height:1.5;
   margin:0;
@@ -87,28 +87,28 @@
 
 @media(max-width:390px){
   .pengu-stage{
-    min-height:88px;
-    grid-template-columns:56px minmax(0,1fr);
+    min-height:104px;
+    grid-template-columns:72px minmax(0,1fr);
     gap:10px;
     padding:10px;
     margin:8px 0 12px;
     border-radius:16px;
   }
   .pengu-rig{
-    width:56px;
-    height:56px;
+    width:72px;
+    height:72px;
   }
   .pengu-avatar{
-    width:46px;
-    height:46px;
+    width:68px;
+    height:68px;
   }
   .pengu-bubble b{
-    font-size:12.5px;
+    font-size:15px;
     line-height:1.3;
     margin-bottom:5px;
   }
   .pengu-bubble span{
-    font-size:10.5px;
+    font-size:12px;
     line-height:1.45;
   }
   .template-card.template-featured{
