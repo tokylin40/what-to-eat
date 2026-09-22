@@ -179,29 +179,34 @@
     source.stop(start + duration + .02);
   }
 
+  const SOUND_V2_GAIN = 1.6;
+  function v2Gain(volume) {
+    return Math.min(.16, volume * SOUND_V2_GAIN);
+  }
+
   function playClickSound() {
-    playTone(720,.052,'triangle',.045);
-    playTone(1080,.036,'sine',.025,.012);
+    playTone(720,.052,'triangle',v2Gain(.045));
+    playTone(1080,.036,'sine',v2Gain(.025),.012);
   }
 
   function playLoseSound() {
-    playTone(330,.12,'triangle',.07,0,230);
-    playTone(220,.14,'sine',.055,.07,150);
-    playNoiseBurst(.08,.018,.015,650);
+    playTone(330,.12,'triangle',v2Gain(.07),0,230);
+    playTone(220,.14,'sine',v2Gain(.055),.07,150);
+    playNoiseBurst(.08,v2Gain(.018),.015,650);
   }
 
   function playWinSound() {
-    playNoiseBurst(.11,.028,0,1800);
+    playNoiseBurst(.11,v2Gain(.028),0,1800);
     [523,659,784,1047].forEach((freq,i) => {
-      playTone(freq,.16 + i*.025,i < 3 ? 'triangle' : 'sine',.062,i*.075);
+      playTone(freq,.16 + i*.025,i < 3 ? 'triangle' : 'sine',v2Gain(.062),i*.075);
     });
-    playTone(130,.19,'sine',.055,0,78);
+    playTone(130,.19,'sine',v2Gain(.055),0,78);
   }
 
   function playWheelStartSound() {
-    playNoiseBurst(.24,.034,0,950);
-    playTone(115,.22,'sine',.05,0,260);
-    playTone(310,.16,'triangle',.026,.055,520);
+    playNoiseBurst(.24,v2Gain(.034),0,950);
+    playTone(115,.22,'sine',v2Gain(.05),0,260);
+    playTone(310,.16,'triangle',v2Gain(.026),.055,520);
   }
 
   function playSpinTicks() {
@@ -210,22 +215,22 @@
       const progress = i / (times.length - 1);
       const freq = 760 - progress * 280;
       const vol = .031 + (1 - progress) * .012;
-      playTone(freq,.028,'triangle',vol,time);
-      playTone(freq * 1.5,.02,'sine',vol * .34,time + .004);
+      playTone(freq,.028,'triangle',v2Gain(vol),time);
+      playTone(freq * 1.5,.02,'sine',v2Gain(vol * .34),time + .004);
     });
   }
 
   function playWheelHitSound() {
-    playTone(105,.2,'sine',.075,0,62);
-    playNoiseBurst(.075,.032,0,650);
-    playTone(880,.14,'triangle',.072,.028);
-    playTone(1320,.16,'sine',.042,.06);
+    playTone(105,.2,'sine',v2Gain(.075),0,62);
+    playNoiseBurst(.075,v2Gain(.032),0,650);
+    playTone(880,.14,'triangle',v2Gain(.072),.028);
+    playTone(1320,.16,'sine',v2Gain(.042),.06);
   }
 
   function playHellPulse(intensity = 0) {
     const boost = Math.min(.025, intensity * .008);
-    playTone(92 + intensity * 5,.11,'sine',.04 + boost,0,82);
-    playTone(184 + intensity * 8,.055,'triangle',.018 + boost * .4,.018);
+    playTone(92 + intensity * 5,.11,'sine',v2Gain(.04 + boost),0,82);
+    playTone(184 + intensity * 8,.055,'triangle',v2Gain(.018 + boost * .4),.018);
   }
 
   function playHellCountdown() {
@@ -235,14 +240,14 @@
   }
 
   function playHellAnswerSound() {
-    playTone(620,.07,'triangle',.047);
-    playTone(830,.09,'sine',.045,.045);
+    playTone(620,.07,'triangle',v2Gain(.047));
+    playTone(830,.09,'sine',v2Gain(.045),.045);
   }
 
   function playHellTimeoutSound() {
-    playTone(210,.12,'sawtooth',.06,0,150);
-    playTone(145,.18,'sine',.065,.08,92);
-    playNoiseBurst(.1,.022,.02,500);
+    playTone(210,.12,'sawtooth',v2Gain(.06),0,150);
+    playTone(145,.18,'sine',v2Gain(.065),.08,92);
+    playNoiseBurst(.1,v2Gain(.022),.02,500);
   }
 
   function toggleSound() {
