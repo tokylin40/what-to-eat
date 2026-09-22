@@ -24,6 +24,9 @@
   let lastTournamentFinalMode = null;
   let soundEnabled = localStorage.getItem(SOUND_KEY) !== 'off';
   let audioCtx = null;
+  let audioMaster = null;
+  let audioCompressor = null;
+  let audioDestination = null;
   let customWheels = loadCustomWheels();
 
   function blankStats() {
@@ -83,47 +86,163 @@
     if (!soundEnabled) return null;
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return null;
-    if (!audioCtx) audioCtx = new Ctx();
+
+    if (!audioCtx) {
+      audioCtx = new Ctx();
+      audioMaster = audioCtx.createGain();
+      audioMaster.gain.value = .78;
+
+      if (typeof audioCtx.createDynamicsCompressor === 'function') {
+        audioCompressor = audioCtx.createDynamicsCompressor();
+        audioCompressor.threshold.value = -18;
+        audioCompressor.knee.value = 18;
+        audioCompressor.ratio.value = 6;
+        audioCompressor.attack.value = .003;
+        audioCompressor.release.value = .22;
+        audioCompressor.connect(audioMaster);
+        audioDestination = audioCompressor;
+      } else {
+        audioDestination = audioMaster;
+      }
+      audioMaster.connect(audioCtx.destination);
+    }
+
     if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
     return audioCtx;
   }
 
-  function playTone(freq = 440, duration = .06, type = 'square', volume = .0825, delay = 0) {
+  function connectSoundNode(node) {
+    node.connect(audioDestination || audioMaster || audioCtx.destination);
+  }
+
+  function playTone(freq = 440, duration = .06, type = 'sine', volume = .06, delay = 0, endFreq = null) {
     const ctx = ensureAudioContext();
     if (!ctx) return;
+
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     const start = ctx.currentTime + delay;
+    const end = start + duration;
+
     osc.type = type;
     osc.frequency.setValueAtTime(freq, start);
+    if (endFreq && osc.frequency.exponentialRampToValueAtTime) {
+      osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq), end);
+    }
+
     gain.gain.setValueAtTime(.0001, start);
-    gain.gain.exponentialRampToValueAtTime(Math.max(.001, volume), start + .008);
-    gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+    gain.gain.exponentialRampToValueAtTime(Math.max(.001, volume), start + Math.min(.014, duration * .28));
+    gain.gain.exponentialRampToValueAtTime(.0001, end);
+
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    connectSoundNode(gain);
     osc.start(start);
-    osc.stop(start + duration + .02);
+    osc.stop(end + .025);
+  }
+
+  function playNoiseBurst(duration = .14, volume = .035, delay = 0, cutoff = 1200) {
+    const ctx = ensureAudioContext();
+    if (!ctx) return;
+
+    if (typeof ctx.createBuffer !== 'function' || typeof ctx.createBufferSource !== 'function') {
+      playTone(180, duration, 'triangle', volume * .7, delay, 420);
+      return;
+    }
+
+    const frames = Math.max(1, Math.floor(ctx.sampleRate * duration));
+    const buffer = ctx.createBuffer(1, frames, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < frames; i += 1) data[i] = (Math.random() * 2 - 1) * (1 - i / frames);
+
+    const source = ctx.createBufferSource();
+    const gain = ctx.createGain();
+    const start = ctx.currentTime + delay;
+    source.buffer = buffer;
+
+    gain.gain.setValueAtTime(.0001, start);
+    gain.gain.exponentialRampToValueAtTime(Math.max(.001, volume), start + .018);
+    gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+
+    if (typeof ctx.createBiquadFilter === 'function') {
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(cutoff, start);
+      filter.Q.value = .8;
+      source.connect(filter);
+      filter.connect(gain);
+    } else {
+      source.connect(gain);
+    }
+
+    connectSoundNode(gain);
+    source.start(start);
+    source.stop(start + duration + .02);
   }
 
   function playClickSound() {
-    playTone(520,.05,'square',.057);
+    playTone(720,.052,'triangle',.045);
+    playTone(1080,.036,'sine',.025,.012);
   }
 
   function playLoseSound() {
-    playTone(230,.09,'sawtooth',.078);
-    playTone(165,.11,'sawtooth',.063,.07);
+    playTone(330,.12,'triangle',.07,0,230);
+    playTone(220,.14,'sine',.055,.07,150);
+    playNoiseBurst(.08,.018,.015,650);
   }
 
   function playWinSound() {
-    playTone(523,.11,'sine',.0975);
-    playTone(659,.13,'sine',.105,.1);
-    playTone(784,.19,'sine',.117,.21);
+    playNoiseBurst(.11,.028,0,1800);
+    [523,659,784,1047].forEach((freq,i) => {
+      playTone(freq,.16 + i*.025,i < 3 ? 'triangle' : 'sine',.062,i*.075);
+    });
+    playTone(130,.19,'sine',.055,0,78);
+  }
+
+  function playWheelStartSound() {
+    playNoiseBurst(.24,.034,0,950);
+    playTone(115,.22,'sine',.05,0,260);
+    playTone(310,.16,'triangle',.026,.055,520);
   }
 
   function playSpinTicks() {
-    [0,.08,.16,.24,.33,.43,.54,.66,.79,.93,1.08,1.24,1.41,1.58].forEach((time,i) => {
-      playTone(360 + i*18,.03,'square',.051,time);
+    const times = [0.08,.15,.22,.29,.36,.44,.52,.61,.71,.82,.94,1.08,1.23,1.39,1.53];
+    times.forEach((time,i) => {
+      const progress = i / (times.length - 1);
+      const freq = 760 - progress * 280;
+      const vol = .031 + (1 - progress) * .012;
+      playTone(freq,.028,'triangle',vol,time);
+      playTone(freq * 1.5,.02,'sine',vol * .34,time + .004);
     });
+  }
+
+  function playWheelHitSound() {
+    playTone(105,.2,'sine',.075,0,62);
+    playNoiseBurst(.075,.032,0,650);
+    playTone(880,.14,'triangle',.072,.028);
+    playTone(1320,.16,'sine',.042,.06);
+  }
+
+  function playHellPulse(intensity = 0) {
+    const boost = Math.min(.025, intensity * .008);
+    playTone(92 + intensity * 5,.11,'sine',.04 + boost,0,82);
+    playTone(184 + intensity * 8,.055,'triangle',.018 + boost * .4,.018);
+  }
+
+  function playHellCountdown() {
+    [[180,0],[930,1],[1580,2],[2140,3],[2580,4]].forEach(([ms,level]) => {
+      later(() => playHellPulse(level), ms);
+    });
+  }
+
+  function playHellAnswerSound() {
+    playTone(620,.07,'triangle',.047);
+    playTone(830,.09,'sine',.045,.045);
+  }
+
+  function playHellTimeoutSound() {
+    playTone(210,.12,'sawtooth',.06,0,150);
+    playTone(145,.18,'sine',.065,.08,92);
+    playNoiseBurst(.1,.022,.02,500);
   }
 
   function toggleSound() {
@@ -868,6 +987,7 @@
       if (b.classList.contains('wheel-spin')) b.textContent = '命運正在亂來…';
     });
 
+    playWheelStartSound();
     playSpinTicks();
     const meta = wheelContext || {};
     const chosen = meta.weighted === false ? randomOf(wheelItems) : weightedChoice(wheelItems);
@@ -885,7 +1005,7 @@
     later(() => {
       const hit = document.querySelector(`[data-wheel-index="${idx}"] .wheel-label-inner`);
       if (hit) hit.classList.add('wheel-hit');
-      playTone(880, .11, 'sine', .120);
+      playWheelHitSound();
     }, 1550);
 
     later(() => {
@@ -933,7 +1053,9 @@
       </section>
     </div>`;
     attachBack(renderHome);
-    playTone(760,.045,'sine',.048);
+    playTone(560,.065,'triangle',.03);
+    playTone(760,.08,'sine',.024,.035);
+    playHellCountdown();
     let remaining = 3000;
     const bar = document.querySelector('#timerBar');
     const timer = every(() => {
@@ -951,8 +1073,8 @@
   }
 
   function answerHell(option, auto) {
-    if (auto) playTone(170,.13,'sawtooth',.0825);
-    else playTone(690,.065,'sine',.075);
+    if (auto) playHellTimeoutSound();
+    else playHellAnswerSound();
     document.querySelectorAll('[data-option]').forEach(b => b.disabled = true);
     hell.answers.push(option.prefs || {});
     if (auto) showToast('猶豫超時，地獄替你按了。');
