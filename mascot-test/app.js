@@ -180,8 +180,10 @@
   }
 
   const SOUND_V2_GAIN = 1.6;
-  function v2Gain(volume) {
-    return Math.min(.16, volume * SOUND_V2_GAIN);
+  const CHOICE_GAIN = 1.5;
+  const WHEEL_GAIN = 1.2;
+  function v2Gain(volume, extra = 1) {
+    return Math.min(.20, volume * SOUND_V2_GAIN * extra);
   }
 
   function playClickSound() {
@@ -190,9 +192,9 @@
   }
 
   function playLoseSound() {
-    playTone(330,.12,'triangle',v2Gain(.07),0,230);
-    playTone(220,.14,'sine',v2Gain(.055),.07,150);
-    playNoiseBurst(.08,v2Gain(.018),.015,650);
+    playTone(330,.12,'triangle',v2Gain(.07, CHOICE_GAIN),0,230);
+    playTone(220,.14,'sine',v2Gain(.055, CHOICE_GAIN),.07,150);
+    playNoiseBurst(.08,v2Gain(.018, CHOICE_GAIN),.015,650);
   }
 
   function playWinSound() {
@@ -204,9 +206,9 @@
   }
 
   function playWheelStartSound() {
-    playNoiseBurst(.24,v2Gain(.034),0,950);
-    playTone(115,.22,'sine',v2Gain(.05),0,260);
-    playTone(310,.16,'triangle',v2Gain(.026),.055,520);
+    playNoiseBurst(.24,v2Gain(.034, WHEEL_GAIN),0,950);
+    playTone(115,.22,'sine',v2Gain(.05, WHEEL_GAIN),0,260);
+    playTone(310,.16,'triangle',v2Gain(.026, WHEEL_GAIN),.055,520);
   }
 
   function playSpinTicks() {
@@ -215,16 +217,16 @@
       const progress = i / (times.length - 1);
       const freq = 760 - progress * 280;
       const vol = .031 + (1 - progress) * .012;
-      playTone(freq,.028,'triangle',v2Gain(vol),time);
-      playTone(freq * 1.5,.02,'sine',v2Gain(vol * .34),time + .004);
+      playTone(freq,.028,'triangle',v2Gain(vol, WHEEL_GAIN),time);
+      playTone(freq * 1.5,.02,'sine',v2Gain(vol * .34, WHEEL_GAIN),time + .004);
     });
   }
 
   function playWheelHitSound() {
-    playTone(105,.2,'sine',v2Gain(.075),0,62);
-    playNoiseBurst(.075,v2Gain(.032),0,650);
-    playTone(880,.14,'triangle',v2Gain(.072),.028);
-    playTone(1320,.16,'sine',v2Gain(.042),.06);
+    playTone(105,.2,'sine',v2Gain(.075, WHEEL_GAIN),0,62);
+    playNoiseBurst(.075,v2Gain(.032, WHEEL_GAIN),0,650);
+    playTone(880,.14,'triangle',v2Gain(.072, WHEEL_GAIN),.028);
+    playTone(1320,.16,'sine',v2Gain(.042, WHEEL_GAIN),.06);
   }
 
   function playHellPulse(intensity = 0) {
